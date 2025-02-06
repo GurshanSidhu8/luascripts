@@ -67,7 +67,7 @@ countdownButton.MouseButton1Click:Connect(function()
     end
     countdownButton.Text = "Verification Started"
     loadingFrame:Destroy()  -- Destroy the loading frame after countdown
-    createMainFrame()  -- Show the main GUI
+    createMainFrame()  -- Show the main GUI after loading screen
 end)
 
 -- Create Main Frame (WalkSpeed, JumpPower, Submit)
