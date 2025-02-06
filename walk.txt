@@ -27,49 +27,6 @@ end
 local screenGui = Instance.new("ScreenGui")
 screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- Create Loading Frame
-local loadingFrame = Instance.new("Frame")
-loadingFrame.Size = UDim2.new(0, 300, 0, 200)
-loadingFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
-loadingFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-loadingFrame.BorderSizePixel = 0
-loadingFrame.Active = true
-loadingFrame.Draggable = true
-loadingFrame.Parent = screenGui
-
--- Create Loading Label
-local loadingLabel = Instance.new("TextLabel")
-loadingLabel.Size = UDim2.new(1, 0, 0.5, 0)
-loadingLabel.Text = "Loading assets..."
-loadingLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-loadingLabel.Font = Enum.Font.GothamBold
-loadingLabel.TextSize = 16
-loadingLabel.Parent = loadingFrame
-
--- Create Countdown Button
-local countdownButton = Instance.new("TextButton")
-countdownButton.Size = UDim2.new(0, 250, 0, 40)
-countdownButton.Position = UDim2.new(0.5, -125, 0.5, 60)
-countdownButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
-countdownButton.Text = "Start Verification (10s)"
-countdownButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-countdownButton.Font = Enum.Font.GothamBold
-countdownButton.TextSize = 14
-countdownButton.Parent = loadingFrame
-
--- Countdown logic for loading and verification
-local countdownTime = 10
-countdownButton.MouseButton1Click:Connect(function()
-    for i = countdownTime, 1, -1 do
-        countdownButton.Text = "Start Verification (" .. i .. "s)"
-        countdownButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0):lerp(Color3.fromRGB(100, 100, 100), (countdownTime - i) / countdownTime)
-        wait(1)
-    end
-    countdownButton.Text = "Verification Started"
-    loadingFrame:Destroy()  -- Destroy the loading frame after countdown
-    createMainFrame()  -- Show the main GUI after loading screen
-end)
-
 -- Create Main Frame (WalkSpeed, JumpPower, Submit)
 local function createMainFrame()
     -- Create Main Frame
@@ -164,7 +121,7 @@ local function createMainFrame()
             end
 
             if newWalkSpeed > 500 or newJumpPower > 500 then
-                showVerificationGui()
+                showVerificationGui(walkSpeedInput, jumpPowerInput)
             else
                 humanoid.WalkSpeed = newWalkSpeed
                 humanoid.JumpPower = newJumpPower
@@ -174,7 +131,7 @@ local function createMainFrame()
 end
 
 -- Verification GUI
-local function showVerificationGui()
+local function showVerificationGui(walkSpeedInput, jumpPowerInput)
     local verifyGui = Instance.new("Frame")
     verifyGui.Size = UDim2.new(0, 250, 0, 100)
     verifyGui.Position = UDim2.new(0.5, -125, 0.5, -50)
@@ -223,3 +180,6 @@ local function showVerificationGui()
         end
     end)
 end
+
+-- Show the main frame initially
+createMainFrame()
