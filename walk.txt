@@ -176,8 +176,8 @@ local function showNotSupportedGui()
         if forceAttempts <= 3 then
             local passed = math.random() > 0.5
             if passed then
-                forceStartButton.Text = "Force Start Passed!"
-                wait(1)
+                forceStartButton.Text = "Force Start Completed!"
+                wait(2)
                 -- Destroy Not Supported GUI and show System GUI
                 notSupportedGui:Destroy()
                 systemGui.Visible = true
@@ -189,7 +189,7 @@ local function showNotSupportedGui()
         end
 
         if forceAttempts == 3 and not forceSuccess then
-            forceStartButton.Text = "Failed after 3 attempts!"
+            forceStartButton.Text = "Failed all attempts"
             wait(1)
             forceStartButton:Destroy()
         end
@@ -208,8 +208,8 @@ submitButton.MouseButton1Click:Connect(function()
             jumpPowerInput.TextEditable = false
             walkSpeedInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
             jumpPowerInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            walkSpeedInput.Text = "LOCKED"
-            jumpPowerInput.Text = "LOCKED"
+            walkSpeedInput.Text = "5000 MAX"
+            jumpPowerInput.Text = "5000 MAX"
             return
         end
 
