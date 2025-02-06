@@ -1,0 +1,155 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local attempts = 0  -- Track verification attempts
+
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- Create Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 300, 0, 200)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+mainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+-- Create Title Label
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 30)
+titleLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+titleLabel.Text = "Character Control"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 16
+titleLabel.Parent = mainFrame
+
+-- WalkSpeed Label
+local walkSpeedLabel = Instance.new("TextLabel")
+walkSpeedLabel.Size = UDim2.new(0, 120, 0, 40)
+walkSpeedLabel.Position = UDim2.new(0, 10, 0, 40)
+walkSpeedLabel.Text = "WalkSpeed:"
+walkSpeedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+walkSpeedLabel.Font = Enum.Font.GothamBold
+walkSpeedLabel.TextSize = 14
+walkSpeedLabel.Parent = mainFrame
+
+-- WalkSpeed Input
+local walkSpeedInput = Instance.new("TextBox")
+walkSpeedInput.Size = UDim2.new(0, 100, 0, 40)
+walkSpeedInput.Position = UDim2.new(0, 140, 0, 40)
+walkSpeedInput.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+walkSpeedInput.Text = tostring(humanoid.WalkSpeed)
+walkSpeedInput.Font = Enum.Font.GothamBold
+walkSpeedInput.TextSize = 14
+walkSpeedInput.Parent = mainFrame
+
+-- JumpPower Label
+local jumpPowerLabel = Instance.new("TextLabel")
+jumpPowerLabel.Size = UDim2.new(0, 120, 0, 40)
+jumpPowerLabel.Position = UDim2.new(0, 10, 0, 90)
+jumpPowerLabel.Text = "JumpPower:"
+jumpPowerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+jumpPowerLabel.Font = Enum.Font.GothamBold
+jumpPowerLabel.TextSize = 14
+jumpPowerLabel.Parent = mainFrame
+
+-- JumpPower Input
+local jumpPowerInput = Instance.new("TextBox")
+jumpPowerInput.Size = UDim2.new(0, 100, 0, 40)
+jumpPowerInput.Position = UDim2.new(0, 140, 0, 90)
+jumpPowerInput.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+jumpPowerInput.Text = tostring(humanoid.JumpPower)
+jumpPowerInput.Font = Enum.Font.GothamBold
+jumpPowerInput.TextSize = 14
+jumpPowerInput.Parent = mainFrame
+
+-- Submit Button
+local submitButton = Instance.new("TextButton")
+submitButton.Size = UDim2.new(1, -20, 0, 40)
+submitButton.Position = UDim2.new(0, 10, 0, 140)
+submitButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+submitButton.Text = "Apply Settings"
+submitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+submitButton.Font = Enum.Font.GothamBold
+submitButton.TextSize = 14
+submitButton.Parent = mainFrame
+
+-- Verification GUI
+local function showVerificationGui()
+    local verifyGui = Instance.new("Frame")
+    verifyGui.Size = UDim2.new(0, 250, 0, 100)
+    verifyGui.Position = UDim2.new(0.5, -125, 0.5, -50)
+    verifyGui.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    verifyGui.Parent = screenGui
+
+    local verifyLabel = Instance.new("TextLabel")
+    verifyLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    verifyLabel.Text = "Verify: I am not a robot"
+    verifyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    verifyLabel.Font = Enum.Font.GothamBold
+    verifyLabel.TextSize = 16
+    verifyLabel.Parent = verifyGui
+
+    local verifyButton = Instance.new("TextButton")
+    verifyButton.Size = UDim2.new(1, 0, 0.5, 0)
+    verifyButton.Position = UDim2.new(0, 0, 0.5, 0)
+    verifyButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+    verifyButton.Text = "Hold to Verify (3s)"
+    verifyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    verifyButton.Font = Enum.Font.GothamBold
+    verifyButton.TextSize = 14
+    verifyButton.Parent = verifyGui
+
+    local holding = false
+    verifyButton.MouseButton1Down:Connect(function()
+        holding = true
+        for i = 3, 1, -1 do
+            if not holding then break end
+            verifyButton.Text = "Hold to Verify (" .. i .. "s)"
+            wait(1)
+        end
+        if holding then
+            verifyGui:Destroy()
+            humanoid.WalkSpeed = tonumber(walkSpeedInput.Text)
+            humanoid.JumpPower = tonumber(jumpPowerInput.Text)
+        end
+    end)
+
+    verifyButton.MouseButton1Up:Connect(function()
+        holding = false
+        verifyButton.Text = "Hold to Verify (3s)"
+        attempts = attempts + 1
+        if attempts >= 3 then
+            player:Kick("Verify first")
+        end
+    end)
+end
+
+submitButton.MouseButton1Click:Connect(function()
+    local newWalkSpeed = tonumber(walkSpeedInput.Text)
+    local newJumpPower = tonumber(jumpPowerInput.Text)
+
+    if newWalkSpeed and newJumpPower then
+        if newWalkSpeed > 5000 or newJumpPower > 5000 then
+            -- Lock inputs permanently
+            walkSpeedInput.TextEditable = false
+            jumpPowerInput.TextEditable = false
+            walkSpeedInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            jumpPowerInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            walkSpeedInput.Text = "LOCKED"
+            jumpPowerInput.Text = "LOCKED"
+            return
+        end
+
+        if newWalkSpeed > 500 or newJumpPower > 500 then
+            showVerificationGui()
+        else
+            humanoid.WalkSpeed = newWalkSpeed
+            humanoid.JumpPower = newJumpPower
+        end
+    end
+end)
