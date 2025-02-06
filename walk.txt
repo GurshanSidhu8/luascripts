@@ -78,6 +78,26 @@ submitButton.Font = Enum.Font.GothamBold
 submitButton.TextSize = 14
 submitButton.Parent = mainFrame
 
+-- Function to create the cross button
+local function createCrossButton(parent)
+    local crossButton = Instance.new("TextButton")
+    crossButton.Size = UDim2.new(0, 30, 0, 30)
+    crossButton.Position = UDim2.new(1, -40, 0, 10)
+    crossButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    crossButton.Text = "X"
+    crossButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    crossButton.Font = Enum.Font.GothamBold
+    crossButton.TextSize = 18
+    crossButton.Parent = parent
+    
+    crossButton.MouseButton1Click:Connect(function()
+        parent:Destroy()  -- Close the GUI
+    end)
+end
+
+-- Create the cross button for the main frame
+createCrossButton(mainFrame)
+
 -- Verification GUI
 local function showVerificationGui()
     local verifyGui = Instance.new("Frame")
