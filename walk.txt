@@ -11,15 +11,16 @@ local forceSuccess = false
 local screenGui = Instance.new("ScreenGui")
 screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- Create Main Frame
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 300, 0, 200)
-mainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
-mainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-mainFrame.BorderSizePixel = 0
-mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.Parent = screenGui
+-- Create System GUI (WalkSpeed and JumpPower GUI)
+local systemGui = Instance.new("Frame")
+systemGui.Size = UDim2.new(0, 300, 0, 200)
+systemGui.Position = UDim2.new(0.5, -150, 0.5, -100)
+systemGui.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+systemGui.BorderSizePixel = 0
+systemGui.Active = true
+systemGui.Draggable = true
+systemGui.Visible = false  -- Initially hidden
+systemGui.Parent = screenGui
 
 -- Create Title Label
 local titleLabel = Instance.new("TextLabel")
@@ -29,7 +30,7 @@ titleLabel.Text = "Character Control"
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextSize = 16
-titleLabel.Parent = mainFrame
+titleLabel.Parent = systemGui
 
 -- WalkSpeed Label
 local walkSpeedLabel = Instance.new("TextLabel")
@@ -39,7 +40,7 @@ walkSpeedLabel.Text = "WalkSpeed:"
 walkSpeedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 walkSpeedLabel.Font = Enum.Font.GothamBold
 walkSpeedLabel.TextSize = 14
-walkSpeedLabel.Parent = mainFrame
+walkSpeedLabel.Parent = systemGui
 
 -- WalkSpeed Input
 local walkSpeedInput = Instance.new("TextBox")
@@ -49,7 +50,7 @@ walkSpeedInput.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 walkSpeedInput.Text = tostring(humanoid.WalkSpeed)
 walkSpeedInput.Font = Enum.Font.GothamBold
 walkSpeedInput.TextSize = 14
-walkSpeedInput.Parent = mainFrame
+walkSpeedInput.Parent = systemGui
 
 -- JumpPower Label
 local jumpPowerLabel = Instance.new("TextLabel")
@@ -59,7 +60,7 @@ jumpPowerLabel.Text = "JumpPower:"
 jumpPowerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 jumpPowerLabel.Font = Enum.Font.GothamBold
 jumpPowerLabel.TextSize = 14
-jumpPowerLabel.Parent = mainFrame
+jumpPowerLabel.Parent = systemGui
 
 -- JumpPower Input
 local jumpPowerInput = Instance.new("TextBox")
@@ -69,7 +70,7 @@ jumpPowerInput.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 jumpPowerInput.Text = tostring(humanoid.JumpPower)
 jumpPowerInput.Font = Enum.Font.GothamBold
 jumpPowerInput.TextSize = 14
-jumpPowerInput.Parent = mainFrame
+jumpPowerInput.Parent = systemGui
 
 -- Submit Button
 local submitButton = Instance.new("TextButton")
@@ -80,7 +81,7 @@ submitButton.Text = "Apply Settings"
 submitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 submitButton.Font = Enum.Font.GothamBold
 submitButton.TextSize = 14
-submitButton.Parent = mainFrame
+submitButton.Parent = systemGui
 
 -- Create Cross Button
 local crossButton = Instance.new("TextButton")
@@ -91,7 +92,7 @@ crossButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 crossButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 crossButton.Font = Enum.Font.GothamBold
 crossButton.TextSize = 16
-crossButton.Parent = mainFrame
+crossButton.Parent = systemGui
 
 -- Verification GUI
 local function showVerificationGui()
@@ -177,6 +178,9 @@ local function showNotSupportedGui()
             if passed then
                 forceStartButton.Text = "Force Start Passed!"
                 wait(1)
+                -- Destroy Not Supported GUI and show System GUI
+                notSupportedGui:Destroy()
+                systemGui.Visible = true
                 humanoid.WalkSpeed = tonumber(walkSpeedInput.Text)
                 humanoid.JumpPower = tonumber(jumpPowerInput.Text)
             else
@@ -228,5 +232,5 @@ if gameID ~= supportedGameID then
     showNotSupportedGui()
 else
     -- If supported game, show the main WalkSpeed and JumpPower GUI
-    mainFrame.Visible = true
+    systemGui.Visible = true
 end
