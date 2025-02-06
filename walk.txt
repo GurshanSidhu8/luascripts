@@ -2,136 +2,84 @@ local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local attempts = 0  -- Track verification attempts
-local guiVisible = true  -- Flag to track if GUI is visible
-
--- Function to create the cross button
-local function createCrossButton(parent)
-    local crossButton = Instance.new("TextButton")
-    crossButton.Size = UDim2.new(0, 30, 0, 30)
-    crossButton.Position = UDim2.new(1, -40, 0, 10)
-    crossButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    crossButton.Text = "X"
-    crossButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    crossButton.Font = Enum.Font.GothamBold
-    crossButton.TextSize = 18
-    crossButton.Parent = parent
-    
-    crossButton.MouseButton1Click:Connect(function()
-        if guiVisible then
-            parent:Destroy()  -- Close the GUI
-        end
-    end)
-end
 
 -- Create ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- Create Main Frame (WalkSpeed, JumpPower, Submit)
-local function createMainFrame()
-    -- Create Main Frame
-    local mainFrame = Instance.new("Frame")
-    mainFrame.Size = UDim2.new(0, 300, 0, 200)
-    mainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
-    mainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    mainFrame.BorderSizePixel = 0
-    mainFrame.Active = true
-    mainFrame.Draggable = true
-    mainFrame.Parent = screenGui
+-- Create Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 300, 0, 200)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+mainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
 
-    -- Create Title Label
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.Size = UDim2.new(1, 0, 0, 30)
-    titleLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    titleLabel.Text = "Character Control"
-    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.TextSize = 16
-    titleLabel.Parent = mainFrame
+-- Create Title Label
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 30)
+titleLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+titleLabel.Text = "Character Control"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 16
+titleLabel.Parent = mainFrame
 
-    -- WalkSpeed Label
-    local walkSpeedLabel = Instance.new("TextLabel")
-    walkSpeedLabel.Size = UDim2.new(0, 120, 0, 40)
-    walkSpeedLabel.Position = UDim2.new(0, 10, 0, 40)
-    walkSpeedLabel.Text = "WalkSpeed:"
-    walkSpeedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    walkSpeedLabel.Font = Enum.Font.GothamBold
-    walkSpeedLabel.TextSize = 14
-    walkSpeedLabel.Parent = mainFrame
+-- WalkSpeed Label
+local walkSpeedLabel = Instance.new("TextLabel")
+walkSpeedLabel.Size = UDim2.new(0, 120, 0, 40)
+walkSpeedLabel.Position = UDim2.new(0, 10, 0, 40)
+walkSpeedLabel.Text = "WalkSpeed:"
+walkSpeedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+walkSpeedLabel.Font = Enum.Font.GothamBold
+walkSpeedLabel.TextSize = 14
+walkSpeedLabel.Parent = mainFrame
 
-    -- WalkSpeed Input
-    local walkSpeedInput = Instance.new("TextBox")
-    walkSpeedInput.Size = UDim2.new(0, 100, 0, 40)
-    walkSpeedInput.Position = UDim2.new(0, 140, 0, 40)
-    walkSpeedInput.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    walkSpeedInput.Text = tostring(humanoid.WalkSpeed)
-    walkSpeedInput.Font = Enum.Font.GothamBold
-    walkSpeedInput.TextSize = 14
-    walkSpeedInput.Parent = mainFrame
+-- WalkSpeed Input
+local walkSpeedInput = Instance.new("TextBox")
+walkSpeedInput.Size = UDim2.new(0, 100, 0, 40)
+walkSpeedInput.Position = UDim2.new(0, 140, 0, 40)
+walkSpeedInput.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+walkSpeedInput.Text = tostring(humanoid.WalkSpeed)
+walkSpeedInput.Font = Enum.Font.GothamBold
+walkSpeedInput.TextSize = 14
+walkSpeedInput.Parent = mainFrame
 
-    -- JumpPower Label
-    local jumpPowerLabel = Instance.new("TextLabel")
-    jumpPowerLabel.Size = UDim2.new(0, 120, 0, 40)
-    jumpPowerLabel.Position = UDim2.new(0, 10, 0, 90)
-    jumpPowerLabel.Text = "JumpPower:"
-    jumpPowerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    jumpPowerLabel.Font = Enum.Font.GothamBold
-    jumpPowerLabel.TextSize = 14
-    jumpPowerLabel.Parent = mainFrame
+-- JumpPower Label
+local jumpPowerLabel = Instance.new("TextLabel")
+jumpPowerLabel.Size = UDim2.new(0, 120, 0, 40)
+jumpPowerLabel.Position = UDim2.new(0, 10, 0, 90)
+jumpPowerLabel.Text = "JumpPower:"
+jumpPowerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+jumpPowerLabel.Font = Enum.Font.GothamBold
+jumpPowerLabel.TextSize = 14
+jumpPowerLabel.Parent = mainFrame
 
-    -- JumpPower Input
-    local jumpPowerInput = Instance.new("TextBox")
-    jumpPowerInput.Size = UDim2.new(0, 100, 0, 40)
-    jumpPowerInput.Position = UDim2.new(0, 140, 0, 90)
-    jumpPowerInput.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    jumpPowerInput.Text = tostring(humanoid.JumpPower)
-    jumpPowerInput.Font = Enum.Font.GothamBold
-    jumpPowerInput.TextSize = 14
-    jumpPowerInput.Parent = mainFrame
+-- JumpPower Input
+local jumpPowerInput = Instance.new("TextBox")
+jumpPowerInput.Size = UDim2.new(0, 100, 0, 40)
+jumpPowerInput.Position = UDim2.new(0, 140, 0, 90)
+jumpPowerInput.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+jumpPowerInput.Text = tostring(humanoid.JumpPower)
+jumpPowerInput.Font = Enum.Font.GothamBold
+jumpPowerInput.TextSize = 14
+jumpPowerInput.Parent = mainFrame
 
-    -- Submit Button
-    local submitButton = Instance.new("TextButton")
-    submitButton.Size = UDim2.new(1, -20, 0, 40)
-    submitButton.Position = UDim2.new(0, 10, 0, 140)
-    submitButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
-    submitButton.Text = "Apply Settings"
-    submitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    submitButton.Font = Enum.Font.GothamBold
-    submitButton.TextSize = 14
-    submitButton.Parent = mainFrame
-
-    -- Create Close Cross Button
-    createCrossButton(mainFrame)
-
-    -- Submit Button Logic
-    submitButton.MouseButton1Click:Connect(function()
-        local newWalkSpeed = tonumber(walkSpeedInput.Text)
-        local newJumpPower = tonumber(jumpPowerInput.Text)
-
-        if newWalkSpeed and newJumpPower then
-            if newWalkSpeed > 5000 or newJumpPower > 5000 then
-                -- Lock inputs permanently
-                walkSpeedInput.TextEditable = false
-                jumpPowerInput.TextEditable = false
-                walkSpeedInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-                jumpPowerInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-                walkSpeedInput.Text = "LOCKED"
-                jumpPowerInput.Text = "LOCKED"
-                return
-            end
-
-            if newWalkSpeed > 500 or newJumpPower > 500 then
-                showVerificationGui(walkSpeedInput, jumpPowerInput)
-            else
-                humanoid.WalkSpeed = newWalkSpeed
-                humanoid.JumpPower = newJumpPower
-            end
-        end
-    end)
-end
+-- Submit Button
+local submitButton = Instance.new("TextButton")
+submitButton.Size = UDim2.new(1, -20, 0, 40)
+submitButton.Position = UDim2.new(0, 10, 0, 140)
+submitButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+submitButton.Text = "Apply Settings"
+submitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+submitButton.Font = Enum.Font.GothamBold
+submitButton.TextSize = 14
+submitButton.Parent = mainFrame
 
 -- Verification GUI
-local function showVerificationGui(walkSpeedInput, jumpPowerInput)
+local function showVerificationGui()
     local verifyGui = Instance.new("Frame")
     verifyGui.Size = UDim2.new(0, 250, 0, 100)
     verifyGui.Position = UDim2.new(0.5, -125, 0.5, -50)
@@ -181,5 +129,27 @@ local function showVerificationGui(walkSpeedInput, jumpPowerInput)
     end)
 end
 
--- Show the main frame initially
-createMainFrame()
+submitButton.MouseButton1Click:Connect(function()
+    local newWalkSpeed = tonumber(walkSpeedInput.Text)
+    local newJumpPower = tonumber(jumpPowerInput.Text)
+
+    if newWalkSpeed and newJumpPower then
+        if newWalkSpeed > 5000 or newJumpPower > 5000 then
+            -- Lock inputs permanently
+            walkSpeedInput.TextEditable = false
+            jumpPowerInput.TextEditable = false
+            walkSpeedInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            jumpPowerInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            walkSpeedInput.Text = "LOCKED"
+            jumpPowerInput.Text = "LOCKED"
+            return
+        end
+
+        if newWalkSpeed > 500 or newJumpPower > 500 then
+            showVerificationGui()
+        else
+            humanoid.WalkSpeed = newWalkSpeed
+            humanoid.JumpPower = newJumpPower
+        end
+    end
+end)
