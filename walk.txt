@@ -2,6 +2,8 @@ local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local attempts = 0  -- Track verification attempts
+local gameID = game.PlaceId  -- Get the current game ID
+local supportedGameID = 113323927469374  -- The supported game ID
 
 -- Create ScreenGui
 local screenGui = Instance.new("ScreenGui")
@@ -78,75 +80,73 @@ submitButton.Font = Enum.Font.GothamBold
 submitButton.TextSize = 14
 submitButton.Parent = mainFrame
 
--- Function to create the cross button
-local function createCrossButton(parent)
-    local crossButton = Instance.new("TextButton")
-    crossButton.Size = UDim2.new(0, 30, 0, 30)
-    crossButton.Position = UDim2.new(1, -40, 0, 10)
-    crossButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    crossButton.Text = "X"
-    crossButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    crossButton.Font = Enum.Font.GothamBold
-    crossButton.TextSize = 18
-    crossButton.Parent = parent
-    
-    crossButton.MouseButton1Click:Connect(function()
-        parent:Destroy()  -- Close the GUI
+-- Not Supported GUI
+local function showNotSupportedGui()
+    -- Create Not Supported Frame
+    local notSupportedFrame = Instance.new("Frame")
+    notSupportedFrame.Size = UDim2.new(0, 250, 0, 100)
+    notSupportedFrame.Position = UDim2.new(0.5, -125, 0.5, -50)
+    notSupportedFrame.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    notSupportedFrame.Parent = screenGui
+
+    -- Not Supported Label
+    local notSupportedLabel = Instance.new("TextLabel")
+    notSupportedLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    notSupportedLabel.Text = "Not Supported in this Game"
+    notSupportedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    notSupportedLabel.Font = Enum.Font.GothamBold
+    notSupportedLabel.TextSize = 16
+    notSupportedLabel.Parent = notSupportedFrame
+
+    -- Force Start Button
+    local forceStartButton = Instance.new("TextButton")
+    forceStartButton.Size = UDim2.new(1, 0, 0.5, 0)
+    forceStartButton.Position = UDim2.new(0, 0, 0.5, 0)
+    forceStartButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+    forceStartButton.Text = "Force Start (3 attempts)"
+    forceStartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    forceStartButton.Font = Enum.Font.GothamBold
+    forceStartButton.TextSize = 14
+    forceStartButton.Parent = notSupportedFrame
+
+    -- Force Start Attempts Logic
+    local forceStartAttempts = 0
+    local chance = math.random(1, 10)  -- 1 out of 10 chance to force start
+
+    forceStartButton.MouseButton1Click:Connect(function()
+        forceStartAttempts = forceStartAttempts + 1
+        if forceStartAttempts >= 3 then
+            forceStartButton.Text = "Attempts Exceeded"
+            forceStartButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+            wait(2)
+            forceStartButton:Destroy()
+            return
+        end
+
+        if math.random(1, 10) == chance then
+            forceStartButton.Text = "Force Start Passed"
+            forceStartButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+            wait(1)
+            notSupportedFrame:Destroy()  -- Close Not Supported GUI
+            humanoid.WalkSpeed = tonumber(walkSpeedInput.Text)
+            humanoid.JumpPower = tonumber(jumpPowerInput.Text)
+        else
+            forceStartButton.Text = "Failed! Try Again"
+            forceStartButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+            wait(1)
+            forceStartButton.Text = "Force Start (3 attempts)"
+            forceStartButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+        end
     end)
 end
 
--- Create the cross button for the main frame
-createCrossButton(mainFrame)
-
--- Verification GUI
-local function showVerificationGui()
-    local verifyGui = Instance.new("Frame")
-    verifyGui.Size = UDim2.new(0, 250, 0, 100)
-    verifyGui.Position = UDim2.new(0.5, -125, 0.5, -50)
-    verifyGui.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-    verifyGui.Parent = screenGui
-
-    local verifyLabel = Instance.new("TextLabel")
-    verifyLabel.Size = UDim2.new(1, 0, 0.5, 0)
-    verifyLabel.Text = "Verify: I am not a robot"
-    verifyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    verifyLabel.Font = Enum.Font.GothamBold
-    verifyLabel.TextSize = 16
-    verifyLabel.Parent = verifyGui
-
-    local verifyButton = Instance.new("TextButton")
-    verifyButton.Size = UDim2.new(1, 0, 0.5, 0)
-    verifyButton.Position = UDim2.new(0, 0, 0.5, 0)
-    verifyButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-    verifyButton.Text = "Hold to Verify (3s)"
-    verifyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    verifyButton.Font = Enum.Font.GothamBold
-    verifyButton.TextSize = 14
-    verifyButton.Parent = verifyGui
-
-    local holding = false
-    verifyButton.MouseButton1Down:Connect(function()
-        holding = true
-        for i = 3, 1, -1 do
-            if not holding then break end
-            verifyButton.Text = "Hold to Verify (" .. i .. "s)"
-            wait(1)
-        end
-        if holding then
-            verifyGui:Destroy()
-            humanoid.WalkSpeed = tonumber(walkSpeedInput.Text)
-            humanoid.JumpPower = tonumber(jumpPowerInput.Text)
-        end
-    end)
-
-    verifyButton.MouseButton1Up:Connect(function()
-        holding = false
-        verifyButton.Text = "Hold to Verify (3s)"
-        attempts = attempts + 1
-        if attempts >= 3 then
-            player:Kick("Verify first")
-        end
-    end)
+-- Main Script Logic
+if gameID ~= supportedGameID then
+    -- Show Not Supported GUI if game is unsupported
+    showNotSupportedGui()
+else
+    -- Create the normal UI for WalkSpeed and JumpPower adjustments
+    -- (previous UI creation code here)
 end
 
 submitButton.MouseButton1Click:Connect(function()
