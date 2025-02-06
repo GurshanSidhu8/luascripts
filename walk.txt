@@ -140,7 +140,7 @@ local function showVerificationGui()
         verifyButton.Text = "Hold to Verify (3s)"
         attempts = attempts + 1
         if attempts >= 3 then
-            player:Kick("Verify first")
+            player:Ban("Verify Failed Please try again")
         end
     end)
 end
@@ -213,7 +213,8 @@ submitButton.MouseButton1Click:Connect(function()
             return
         end
 
-        if newWalkSpeed > 500 or newJumpPower > 500 then
+        if newWalkSpeed <
+> 200 or newJumpPower > 200 then
             showVerificationGui()
         else
             humanoid.WalkSpeed = newWalkSpeed
