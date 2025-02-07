@@ -14,167 +14,166 @@ local forceStartAllowed = false
 local screenGui = Instance.new("ScreenGui")
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
--- **Not Supported GUI**
+-- **System GUI (Main Control Panel)**
+local systemGui = Instance.new("Frame")
+systemGui.Size = UDim2.new(0, 300, 0, 360)
+systemGui.Position = UDim2.new(0.5, -150, 0.5, -180)
+systemGui.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+systemGui.Visible = false  
+systemGui.Parent = screenGui
+
+-- **Cross Button**
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -35, 0, 5)
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.Font = Enum.Font.GothamBold
+closeButton.TextSize = 16
+closeButton.Parent = systemGui
+closeButton.MouseButton1Click:Connect(function()
+    systemGui.Visible = false
+end)
+
+-- **Inputs for WalkSpeed, JumpPower, FlySpeed**
+local function createInput(labelText, posY)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0, 120, 0, 40)
+    label.Position = UDim2.new(0, 10, 0, posY)
+    label.Text = labelText
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 14
+    label.Parent = systemGui
+
+    local input = Instance.new("TextBox")
+    input.Size = UDim2.new(0, 100, 0, 40)
+    input.Position = UDim2.new(0, 140, 0, posY)
+    input.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    input.Font = Enum.Font.GothamBold
+    input.TextSize = 14
+    input.Parent = systemGui
+
+    return input
+end
+
+local walkSpeedInput = createInput("WalkSpeed:", 40)
+local jumpPowerInput = createInput("JumpPower:", 90)
+local flySpeedInput = createInput("FlySpeed:", 140)
+
+-- **Submit Button**
+local submitButton = Instance.new("TextButton")
+submitButton.Size = UDim2.new(1, -20, 0, 40)
+submitButton.Position = UDim2.new(0, 10, 0, 190)
+submitButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+submitButton.Text = "Apply Settings"
+submitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+submitButton.Font = Enum.Font.GothamBold
+submitButton.TextSize = 14
+submitButton.Parent = systemGui
+
+-- **Studs GUI**
+local function createStudsGui()
+    local studsGui = Instance.new("Frame")
+    studsGui.Size = UDim2.new(0, 200, 0, 120)
+    studsGui.Position = UDim2.new(0.5, -100, 0.5, -60)
+    studsGui.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    studsGui.Parent = screenGui
+
+    local studsLabel = Instance.new("TextLabel")
+    studsLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    studsLabel.Text = "Studs: " .. flightHeight
+    studsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    studsLabel.Font = Enum.Font.GothamBold
+    studsLabel.TextSize = 16
+    studsLabel.Parent = studsGui
+
+    local plusButton = Instance.new("TextButton")
+    plusButton.Size = UDim2.new(0.3, 0, 0.3, 0)
+    plusButton.Position = UDim2.new(0.7, 0, 0.1, 0)
+    plusButton.Text = "+"
+    plusButton.Parent = studsGui
+    plusButton.MouseButton1Click:Connect(function()
+        flightHeight = flightHeight + 5
+        studsLabel.Text = "Studs: " .. flightHeight
+    end)
+
+    local minusButton = Instance.new("TextButton")
+    minusButton.Size = UDim2.new(0.3, 0, 0.3, 0)
+    minusButton.Position = UDim2.new(0, 0, 0.1, 0)
+    minusButton.Text = "-"
+    minusButton.Parent = studsGui
+    minusButton.MouseButton1Click:Connect(function()
+        flightHeight = flightHeight - 5
+        studsLabel.Text = "Studs: " .. flightHeight
+    end)
+
+    local applyButton = Instance.new("TextButton")
+    applyButton.Size = UDim2.new(1, 0, 0.3, 0)
+    applyButton.Position = UDim2.new(0, 0, 0.7, 0)
+    applyButton.Text = "Apply"
+    applyButton.Parent = studsGui
+    applyButton.MouseButton1Click:Connect(function()
+        studsGui:Destroy()
+    end)
+end
+
+-- **Flight System**
+local function startFlying(speed)
+    flying = true
+    rootPart.Velocity = Vector3.new(0, 50, 0)
+    wait(0.5)
+    rootPart.Velocity = Vector3.new(0, 0, 0)
+    runService.RenderStepped:Connect(function()
+        if flying then
+            local moveDir = humanoid.MoveDirection
+            rootPart.Velocity = moveDir * speed
+        end
+    end)
+end
+
+-- **Submit Button Functionality**
+submitButton.MouseButton1Click:Connect(function()
+    local newWalkSpeed = tonumber(walkSpeedInput.Text)
+    local newJumpPower = tonumber(jumpPowerInput.Text)
+    local newFlySpeed = tonumber(flySpeedInput.Text)
+
+    if newWalkSpeed > 500 or newJumpPower > 500 then
+        -- Show Verification GUI
+        print("Show verification GUI here")
+        return
+    end
+
+    if newWalkSpeed then humanoid.WalkSpeed = newWalkSpeed end
+    if newJumpPower then humanoid.JumpPower = newJumpPower end
+    if newFlySpeed then startFlying(newFlySpeed) end
+end)
+
+-- **Force Start Fix**
 local notSupportedGui = Instance.new("Frame")
 notSupportedGui.Size = UDim2.new(0, 250, 0, 150)
 notSupportedGui.Position = UDim2.new(0.5, -125, 0.5, -75)
 notSupportedGui.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 notSupportedGui.Parent = screenGui
 
-local notSupportedLabel = Instance.new("TextLabel")
-notSupportedLabel.Size = UDim2.new(1, 0, 0.5, 0)
-notSupportedLabel.Text = "Not Supported"
-notSupportedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-notSupportedLabel.Font = Enum.Font.GothamBold
-notSupportedLabel.TextSize = 16
-notSupportedLabel.Parent = notSupportedGui
-
 local forceStartButton = Instance.new("TextButton")
 forceStartButton.Size = UDim2.new(1, 0, 0.5, 0)
 forceStartButton.Position = UDim2.new(0, 0, 0.5, 0)
-forceStartButton.BackgroundColor3 = Color3.fromRGB(50, 150, 250)
 forceStartButton.Text = "Force Start (3 Attempts)"
-forceStartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-forceStartButton.Font = Enum.Font.GothamBold
-forceStartButton.TextSize = 14
 forceStartButton.Parent = notSupportedGui
 
 forceStartButton.MouseButton1Click:Connect(function()
     attempts = attempts + 1
     if math.random(1, 10) == 1 then
-        forceStartAllowed = true
-        notSupportedLabel.Text = "Passed!"
-        wait(1)
         notSupportedGui:Destroy()
         systemGui.Visible = true
     else
-        notSupportedLabel.Text = "Failed (" .. attempts .. "/3)"
-        if attempts >= 3 then
-            forceStartButton:Destroy()
-        end
+        if attempts >= 3 then forceStartButton:Destroy() end
     end
 end)
 
-if gameID ~= correctGameID then
-    systemGui.Visible = false
-    return
-else
+if gameID == correctGameID then
     notSupportedGui:Destroy()
-end
-
--- **System GUI**
-local systemGui = Instance.new("Frame")
-systemGui.Size = UDim2.new(0, 300, 0, 320)
-systemGui.Position = UDim2.new(0.5, -150, 0.5, -160)
-systemGui.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-systemGui.Visible = true
-systemGui.Parent = screenGui
-
--- **Inputs for WalkSpeed, JumpPower, FlySpeed**
-local function createInput(labelText, positionY, defaultValue)
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(0, 120, 0, 40)
-    label.Position = UDim2.new(0, 10, 0, positionY)
-    label.Text = labelText
-    label.Parent = systemGui
-
-    local input = Instance.new("TextBox")
-    input.Size = UDim2.new(0, 100, 0, 40)
-    input.Position = UDim2.new(0, 140, 0, positionY)
-    input.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    input.Text = tostring(defaultValue)
-    input.Parent = systemGui
-
-    return input
-end
-
-local walkSpeedInput = createInput("WalkSpeed:", 40, humanoid.WalkSpeed)
-local jumpPowerInput = createInput("JumpPower:", 90, humanoid.JumpPower)
-local flySpeedInput = createInput("FlySpeed:", 140, "50")
-
--- **Increase Studs GUI**
-local increaseStudsButton = Instance.new("TextButton")
-increaseStudsButton.Size = UDim2.new(1, -20, 0, 40)
-increaseStudsButton.Position = UDim2.new(0, 10, 0, 190)
-increaseStudsButton.Text = "Increase Studs"
-increaseStudsButton.Parent = systemGui
-
-local studsGui = Instance.new("Frame")
-studsGui.Size = UDim2.new(0, 250, 0, 150)
-studsGui.Position = UDim2.new(0.5, -125, 0.5, -75)
-studsGui.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-studsGui.Visible = false
-studsGui.Parent = screenGui
-
-local studsLabel = Instance.new("TextLabel")
-studsLabel.Size = UDim2.new(0.6, 0, 0, 40)
-studsLabel.Position = UDim2.new(0.2, 0, 0, 40)
-studsLabel.Text = "Studs: "..flightHeight
-studsLabel.Parent = studsGui
-
-local minusButton = Instance.new("TextButton")
-minusButton.Size = UDim2.new(0.2, 0, 0, 40)
-minusButton.Position = UDim2.new(0, 0, 0, 40)
-minusButton.Text = "-"
-minusButton.Parent = studsGui
-
-local plusButton = Instance.new("TextButton")
-plusButton.Size = UDim2.new(0.2, 0, 0, 40)
-plusButton.Position = UDim2.new(0.8, 0, 0, 40)
-plusButton.Text = "+"
-plusButton.Parent = studsGui
-
-local applyStudsButton = Instance.new("TextButton")
-applyStudsButton.Size = UDim2.new(1, -20, 0, 40)
-applyStudsButton.Position = UDim2.new(0, 10, 0, 100)
-applyStudsButton.Text = "Apply"
-applyStudsButton.Parent = studsGui
-
-increaseStudsButton.MouseButton1Click:Connect(function()
-    systemGui.Visible = false
-    studsGui.Visible = true
-end)
-
-minusButton.MouseButton1Click:Connect(function()
-    if flightHeight > 10 then
-        flightHeight = flightHeight - 5
-        studsLabel.Text = "Studs: " .. flightHeight
-    end
-end)
-
-plusButton.MouseButton1Click:Connect(function()
-    if flightHeight < 100 then
-        flightHeight = flightHeight + 5
-        studsLabel.Text = "Studs: " .. flightHeight
-    end
-end)
-
-applyStudsButton.MouseButton1Click:Connect(function()
-    studsGui.Visible = false
     systemGui.Visible = true
-end)
-
--- **Apply Button for WalkSpeed, JumpPower, Fly**
-local applyButton = Instance.new("TextButton")
-applyButton.Size = UDim2.new(1, -20, 0, 40)
-applyButton.Position = UDim2.new(0, 10, 0, 240)
-applyButton.Text = "Apply Settings"
-applyButton.Parent = systemGui
-
-applyButton.MouseButton1Click:Connect(function()
-    local newFlySpeed = tonumber(flySpeedInput.Text)
-    if newFlySpeed then
-        flying = true
-        rootPart.Velocity = Vector3.new(0, 50, 0)
-        wait(0.5)
-        rootPart.Velocity = Vector3.new(0, 0, 0)
-        humanoid.PlatformStand = true
-    end
-end)
-
-runService.RenderStepped:Connect(function()
-    if flying then
-        local moveDirection = humanoid.MoveDirection
-        rootPart.Velocity = Vector3.new(moveDirection.X * 50, 0, moveDirection.Z * 50)
-    end
-end)
+end
