@@ -208,8 +208,8 @@ submitButton.MouseButton1Click:Connect(function()
             jumpPowerInput.TextEditable = false
             walkSpeedInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
             jumpPowerInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            walkSpeedInput.Text = "LOCKED"
-            jumpPowerInput.Text = "LOCKED"
+            walkSpeedInput.Text = "5000 MAX"
+            jumpPowerInput.Text = "5000 MAX"
             return
         end
 
