@@ -174,7 +174,7 @@ local function showNotSupportedGui()
     forceStartButton.MouseButton1Click:Connect(function()
         forceAttempts = forceAttempts + 1
         if forceAttempts <= 3 then
-            local passed = math.random() > 0.5
+            local passed = math.random() > 0.1
             if passed then
                 forceStartButton.Text = "Force Start Success!"
                 wait(1)
