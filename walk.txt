@@ -155,7 +155,7 @@ local function showNotSupportedGui()
 
     local notSupportedLabel = Instance.new("TextLabel")
     notSupportedLabel.Size = UDim2.new(1, 0, 0.5, 0)
-    notSupportedLabel.Text = "Game Not Supported"
+    notSupportedLabel.Text = "This Game is not Supported by Script"
     notSupportedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     notSupportedLabel.Font = Enum.Font.GothamBold
     notSupportedLabel.TextSize = 16
@@ -165,7 +165,7 @@ local function showNotSupportedGui()
     forceStartButton.Size = UDim2.new(1, 0, 0.5, 0)
     forceStartButton.Position = UDim2.new(0, 0, 0.5, 0)
     forceStartButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-    forceStartButton.Text = "Force Run"
+    forceStartButton.Text = "Force Run(3 Attempts)"
     forceStartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     forceStartButton.Font = Enum.Font.GothamBold
     forceStartButton.TextSize = 14
@@ -174,7 +174,7 @@ local function showNotSupportedGui()
     forceStartButton.MouseButton1Click:Connect(function()
         forceAttempts = forceAttempts + 1
         if forceAttempts <= 3 then
-            local passed = math.random() > 0.9
+            local passed = math.random() > 0.5
             if passed then
                 forceStartButton.Text = "Force Start Success!"
                 wait(1)
@@ -189,7 +189,7 @@ local function showNotSupportedGui()
         end
 
         if forceAttempts == 3 and not forceSuccess then
-            forceStartButton.Text = "Failed after 3 attempts!"
+            forceStartButton.Text = "Failed and Reset Script"
             wait(1)
             forceStartButton:Destroy()
         end
