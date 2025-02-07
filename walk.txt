@@ -165,7 +165,7 @@ local function showNotSupportedGui()
     forceStartButton.Size = UDim2.new(1, 0, 0.5, 0)
     forceStartButton.Position = UDim2.new(0, 0, 0.5, 0)
     forceStartButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-    forceStartButton.Text = "Force Start (3 Attempts)"
+    forceStartButton.Text = "Force Run"
     forceStartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     forceStartButton.Font = Enum.Font.GothamBold
     forceStartButton.TextSize = 14
