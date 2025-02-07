@@ -174,9 +174,9 @@ local function showNotSupportedGui()
     forceStartButton.MouseButton1Click:Connect(function()
         forceAttempts = forceAttempts + 1
         if forceAttempts <= 3 then
-            local passed = math.random() > 0.5
+            local passed = math.random() > 0.7
             if passed then
-                forceStartButton.Text = "Force Start Success!"
+                forceStartButton.Text = "Force Start Complete!"
                 wait(1)
                 -- Destroy Not Supported GUI and show System GUI
                 notSupportedGui:Destroy()
@@ -208,8 +208,8 @@ submitButton.MouseButton1Click:Connect(function()
             jumpPowerInput.TextEditable = false
             walkSpeedInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
             jumpPowerInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            walkSpeedInput.Text = "5000 MAX"
-            jumpPowerInput.Text = "5000 MAX"
+            walkSpeedInput.Text = "LIMIT REACHED"
+            jumpPowerInput.Text = "LIMITE REACHED"
             return
         end
 
