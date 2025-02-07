@@ -104,7 +104,7 @@ local function showVerificationGui()
 
     local verifyLabel = Instance.new("TextLabel")
     verifyLabel.Size = UDim2.new(1, 0, 0.5, 0)
-    verifyLabel.Text = "Verify: I am not a robot"
+    verifyLabel.Text = "Verify: To put values above 500"
     verifyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     verifyLabel.Font = Enum.Font.GothamBold
     verifyLabel.TextSize = 16
@@ -176,7 +176,7 @@ local function showNotSupportedGui()
         if forceAttempts <= 3 then
             local passed = math.random() > 0.5
             if passed then
-                forceStartButton.Text = "Force Start Passed!"
+                forceStartButton.Text = "Force Start Success!"
                 wait(1)
                 -- Destroy Not Supported GUI and show System GUI
                 notSupportedGui:Destroy()
