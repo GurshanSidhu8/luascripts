@@ -2,187 +2,179 @@ local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local rootPart = character:WaitForChild("HumanoidRootPart")
-local gameID = game.PlaceId
-local supportedGameID = 113323927469374
-local attempts = 0  
-local forceAttempts = 0
-local forceSuccess = false
-local flying = false
-local flySpeed = 0
+local runService = game:GetService("RunService")
 
--- Create GUI
+local gameID = game.GameId
+local correctGameID = 113323927469374
+local attempts = 0
+local flightHeight = 20
+local flying = false
+local forceStartAllowed = false
+
 local screenGui = Instance.new("ScreenGui")
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
--- Create System GUI
+-- **Not Supported GUI**
+local notSupportedGui = Instance.new("Frame")
+notSupportedGui.Size = UDim2.new(0, 250, 0, 150)
+notSupportedGui.Position = UDim2.new(0.5, -125, 0.5, -75)
+notSupportedGui.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+notSupportedGui.Parent = screenGui
+
+local notSupportedLabel = Instance.new("TextLabel")
+notSupportedLabel.Size = UDim2.new(1, 0, 0.5, 0)
+notSupportedLabel.Text = "Not Supported"
+notSupportedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+notSupportedLabel.Font = Enum.Font.GothamBold
+notSupportedLabel.TextSize = 16
+notSupportedLabel.Parent = notSupportedGui
+
+local forceStartButton = Instance.new("TextButton")
+forceStartButton.Size = UDim2.new(1, 0, 0.5, 0)
+forceStartButton.Position = UDim2.new(0, 0, 0.5, 0)
+forceStartButton.BackgroundColor3 = Color3.fromRGB(50, 150, 250)
+forceStartButton.Text = "Force Start (3 Attempts)"
+forceStartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+forceStartButton.Font = Enum.Font.GothamBold
+forceStartButton.TextSize = 14
+forceStartButton.Parent = notSupportedGui
+
+forceStartButton.MouseButton1Click:Connect(function()
+    attempts = attempts + 1
+    if math.random(1, 10) == 1 then
+        forceStartAllowed = true
+        notSupportedLabel.Text = "Passed!"
+        wait(1)
+        notSupportedGui:Destroy()
+        systemGui.Visible = true
+    else
+        notSupportedLabel.Text = "Failed (" .. attempts .. "/3)"
+        if attempts >= 3 then
+            forceStartButton:Destroy()
+        end
+    end
+end)
+
+if gameID ~= correctGameID then
+    systemGui.Visible = false
+    return
+else
+    notSupportedGui:Destroy()
+end
+
+-- **System GUI**
 local systemGui = Instance.new("Frame")
-systemGui.Size = UDim2.new(0, 300, 0, 250)
-systemGui.Position = UDim2.new(0.5, -150, 0.5, -125)
+systemGui.Size = UDim2.new(0, 300, 0, 320)
+systemGui.Position = UDim2.new(0.5, -150, 0.5, -160)
 systemGui.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-systemGui.Active = true
-systemGui.Draggable = true
-systemGui.Visible = false
+systemGui.Visible = true
 systemGui.Parent = screenGui
 
--- Title
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, 0, 0, 30)
-titleLabel.Text = "Character Control"
-titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.TextSize = 16
-titleLabel.Parent = systemGui
-
--- Function to create labels and inputs
+-- **Inputs for WalkSpeed, JumpPower, FlySpeed**
 local function createInput(labelText, positionY, defaultValue)
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(0, 120, 0, 40)
     label.Position = UDim2.new(0, 10, 0, positionY)
     label.Text = labelText
-    label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.Font = Enum.Font.GothamBold
-    label.TextSize = 14
     label.Parent = systemGui
 
-    local inputBox = Instance.new("TextBox")
-    inputBox.Size = UDim2.new(0, 100, 0, 40)
-    inputBox.Position = UDim2.new(0, 140, 0, positionY)
-    inputBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    inputBox.Text = tostring(defaultValue)
-    inputBox.Font = Enum.Font.GothamBold
-    inputBox.TextSize = 14
-    inputBox.Parent = systemGui
+    local input = Instance.new("TextBox")
+    input.Size = UDim2.new(0, 100, 0, 40)
+    input.Position = UDim2.new(0, 140, 0, positionY)
+    input.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    input.Text = tostring(defaultValue)
+    input.Parent = systemGui
 
-    return inputBox
+    return input
 end
 
--- WalkSpeed Input
 local walkSpeedInput = createInput("WalkSpeed:", 40, humanoid.WalkSpeed)
-
--- JumpPower Input
 local jumpPowerInput = createInput("JumpPower:", 90, humanoid.JumpPower)
+local flySpeedInput = createInput("FlySpeed:", 140, "50")
 
--- FlySpeed Input
-local flySpeedInput = createInput("FlySpeed:", 140, 0)
+-- **Increase Studs GUI**
+local increaseStudsButton = Instance.new("TextButton")
+increaseStudsButton.Size = UDim2.new(1, -20, 0, 40)
+increaseStudsButton.Position = UDim2.new(0, 10, 0, 190)
+increaseStudsButton.Text = "Increase Studs"
+increaseStudsButton.Parent = systemGui
 
--- Apply Button
+local studsGui = Instance.new("Frame")
+studsGui.Size = UDim2.new(0, 250, 0, 150)
+studsGui.Position = UDim2.new(0.5, -125, 0.5, -75)
+studsGui.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+studsGui.Visible = false
+studsGui.Parent = screenGui
+
+local studsLabel = Instance.new("TextLabel")
+studsLabel.Size = UDim2.new(0.6, 0, 0, 40)
+studsLabel.Position = UDim2.new(0.2, 0, 0, 40)
+studsLabel.Text = "Studs: "..flightHeight
+studsLabel.Parent = studsGui
+
+local minusButton = Instance.new("TextButton")
+minusButton.Size = UDim2.new(0.2, 0, 0, 40)
+minusButton.Position = UDim2.new(0, 0, 0, 40)
+minusButton.Text = "-"
+minusButton.Parent = studsGui
+
+local plusButton = Instance.new("TextButton")
+plusButton.Size = UDim2.new(0.2, 0, 0, 40)
+plusButton.Position = UDim2.new(0.8, 0, 0, 40)
+plusButton.Text = "+"
+plusButton.Parent = studsGui
+
+local applyStudsButton = Instance.new("TextButton")
+applyStudsButton.Size = UDim2.new(1, -20, 0, 40)
+applyStudsButton.Position = UDim2.new(0, 10, 0, 100)
+applyStudsButton.Text = "Apply"
+applyStudsButton.Parent = studsGui
+
+increaseStudsButton.MouseButton1Click:Connect(function()
+    systemGui.Visible = false
+    studsGui.Visible = true
+end)
+
+minusButton.MouseButton1Click:Connect(function()
+    if flightHeight > 10 then
+        flightHeight = flightHeight - 5
+        studsLabel.Text = "Studs: " .. flightHeight
+    end
+end)
+
+plusButton.MouseButton1Click:Connect(function()
+    if flightHeight < 100 then
+        flightHeight = flightHeight + 5
+        studsLabel.Text = "Studs: " .. flightHeight
+    end
+end)
+
+applyStudsButton.MouseButton1Click:Connect(function()
+    studsGui.Visible = false
+    systemGui.Visible = true
+end)
+
+-- **Apply Button for WalkSpeed, JumpPower, Fly**
 local applyButton = Instance.new("TextButton")
 applyButton.Size = UDim2.new(1, -20, 0, 40)
-applyButton.Position = UDim2.new(0, 10, 0, 190)
-applyButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+applyButton.Position = UDim2.new(0, 10, 0, 240)
 applyButton.Text = "Apply Settings"
-applyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-applyButton.Font = Enum.Font.GothamBold
-applyButton.TextSize = 14
 applyButton.Parent = systemGui
 
--- Cross Button (Close GUI)
-local crossButton = Instance.new("TextButton")
-crossButton.Size = UDim2.new(0, 30, 0, 30)
-crossButton.Position = UDim2.new(1, -35, 0, -35)
-crossButton.Text = "X"
-crossButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-crossButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-crossButton.Font = Enum.Font.GothamBold
-crossButton.TextSize = 16
-crossButton.Parent = systemGui
-
--- Fly Function
-local function startFlying(speed)
-    if flying then return end
-    flying = true
-    local bodyVelocity = Instance.new("BodyVelocity")
-    bodyVelocity.Velocity = Vector3.new(0, speed, 0)
-    bodyVelocity.MaxForce = Vector3.new(0, math.huge, 0)
-    bodyVelocity.Parent = rootPart
-
-    local flightLoop
-    flightLoop = game:GetService("RunService").Heartbeat:Connect(function()
-        if not flying then
-            flightLoop:Disconnect()
-            bodyVelocity:Destroy()
-        else
-            local moveDir = humanoid.MoveDirection
-            rootPart.Velocity = Vector3.new(moveDir.X * speed, rootPart.Velocity.Y, moveDir.Z * speed)
-        end
-    end)
-end
-
--- Stop Flying Function
-local function stopFlying()
-    flying = false
-end
-
--- Apply Button Functionality
 applyButton.MouseButton1Click:Connect(function()
-    local newWalkSpeed = tonumber(walkSpeedInput.Text)
-    local newJumpPower = tonumber(jumpPowerInput.Text)
     local newFlySpeed = tonumber(flySpeedInput.Text)
-
-    if newWalkSpeed and newJumpPower then
-        humanoid.WalkSpeed = newWalkSpeed
-        humanoid.JumpPower = newJumpPower
-    end
-
-    if newFlySpeed and newFlySpeed > 0 then
-        flySpeed = newFlySpeed
-        startFlying(flySpeed)
-    else
-        stopFlying()
+    if newFlySpeed then
+        flying = true
+        rootPart.Velocity = Vector3.new(0, 50, 0)
+        wait(0.5)
+        rootPart.Velocity = Vector3.new(0, 0, 0)
+        humanoid.PlatformStand = true
     end
 end)
 
--- Cross Button Functionality
-crossButton.MouseButton1Click:Connect(function()
-    screenGui:Destroy()
+runService.RenderStepped:Connect(function()
+    if flying then
+        local moveDirection = humanoid.MoveDirection
+        rootPart.Velocity = Vector3.new(moveDirection.X * 50, 0, moveDirection.Z * 50)
+    end
 end)
-
--- Not Supported GUI
-local function showNotSupportedGui()
-    local notSupportedGui = Instance.new("Frame")
-    notSupportedGui.Size = UDim2.new(0, 300, 0, 150)
-    notSupportedGui.Position = UDim2.new(0.5, -150, 0.5, -75)
-    notSupportedGui.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-    notSupportedGui.Parent = screenGui
-
-    local notSupportedLabel = Instance.new("TextLabel")
-    notSupportedLabel.Size = UDim2.new(1, 0, 0.5, 0)
-    notSupportedLabel.Text = "Not Supported in this game"
-    notSupportedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    notSupportedLabel.Font = Enum.Font.GothamBold
-    notSupportedLabel.TextSize = 16
-    notSupportedLabel.Parent = notSupportedGui
-
-    local forceStartButton = Instance.new("TextButton")
-    forceStartButton.Size = UDim2.new(1, 0, 0.5, 0)
-    forceStartButton.Position = UDim2.new(0, 0, 0.5, 0)
-    forceStartButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-    forceStartButton.Text = "Force Start (3 Attempts)"
-    forceStartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    forceStartButton.Font = Enum.Font.GothamBold
-    forceStartButton.TextSize = 14
-    forceStartButton.Parent = notSupportedGui
-
-    forceStartButton.MouseButton1Click:Connect(function()
-        forceAttempts = forceAttempts + 1
-        local passed = math.random() > 0.5
-        if passed then
-            forceStartButton.Text = "Force Start Passed!"
-            wait(1)
-            notSupportedGui:Destroy()
-            systemGui.Visible = true
-        else
-            forceStartButton.Text = "Failed! Attempts: " .. forceAttempts
-            if forceAttempts == 3 then
-                forceStartButton:Destroy()
-            end
-        end
-    end)
-end
-
--- Show GUI based on game ID
-if gameID ~= supportedGameID then
-    showNotSupportedGui()
-else
-    systemGui.Visible = true
-end
