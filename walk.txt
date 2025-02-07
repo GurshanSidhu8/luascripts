@@ -155,7 +155,7 @@ local function showNotSupportedGui()
 
     local notSupportedLabel = Instance.new("TextLabel")
     notSupportedLabel.Size = UDim2.new(1, 0, 0.5, 0)
-    notSupportedLabel.Text = "Not Supported in this game"
+    notSupportedLabel.Text = "Game Not Supported"
     notSupportedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     notSupportedLabel.Font = Enum.Font.GothamBold
     notSupportedLabel.TextSize = 16
