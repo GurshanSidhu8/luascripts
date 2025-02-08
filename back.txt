@@ -1,0 +1,23 @@
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui")
+gui.Parent = player:WaitForChild("PlayerGui")  -- Add GUI to the player's screen
+
+-- Create the button
+local button = Instance.new("TextButton")
+button.Parent = gui
+button.Size = UDim2.new(0, 100, 0, 50) -- Button size
+button.Position = UDim2.new(0.5, -50, 0.5, -25) -- Center position
+button.Text = "Back"
+button.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red background
+button.TextColor3 = Color3.fromRGB(255, 255, 255) -- White text
+button.Font = Enum.Font.SourceSansBold
+button.TextSize = 20
+
+-- Function to simulate Backspace key press
+local function simulateBackspace()
+    local UserInputService = game:GetService("UserInputService")
+    UserInputService:SendKeyEvent(true, Enum.KeyCode.Backspace, false, nil)
+end
+
+-- Connect button click event
+button.MouseButton1Click:Connect(simulateBackspace)
