@@ -1,0 +1,169 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local gameID = game.PlaceId
+local supportedGameID = 113323927469374
+local attempts = 0  
+local forceAttempts = 0
+local forceSuccess = false
+
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Create Activate GUI
+local activateGui = Instance.new("Frame")
+activateGui.Size = UDim2.new(0, 300, 0, 150)
+activateGui.Position = UDim2.new(0.5, -150, 0.5, -75)
+activateGui.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+activateGui.Parent = screenGui
+
+local activateLabel = Instance.new("TextLabel")
+activateLabel.Size = UDim2.new(1, 0, 0.5, 0)
+activateLabel.Text = "Script Status: NOT ACTIVATED"
+activateLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+activateLabel.Font = Enum.Font.Highway
+activateLabel.TextSize = 16
+activateLabel.Parent = activateGui
+
+local activateButton = Instance.new("TextButton")
+activateButton.Size = UDim2.new(1, 0, 0.5, 0)
+activateButton.Position = UDim2.new(0, 0, 0.5, 0)
+activateButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+activateButton.Text = "Activate Script"
+activateButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+activateButton.Font = Enum.Font.Highway
+activateButton.TextSize = 14
+activateButton.Parent = activateGui
+
+activateButton.MouseButton1Click:Connect(function()
+    activateLabel.Text = "Script Status: ACTIVATED"
+    wait(0.5)
+    activateGui:Destroy()
+
+    if gameID ~= supportedGameID then
+        showNotSupportedGui()
+    else
+        systemGui.Visible = true
+    end
+end)
+
+-- Create System GUI (WalkSpeed and JumpPower GUI)
+local systemGui = Instance.new("Frame")
+systemGui.Size = UDim2.new(0, 300, 0, 200)
+systemGui.Position = UDim2.new(0.5, -150, 0.5, -100)
+systemGui.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+systemGui.Visible = false
+systemGui.Parent = screenGui
+
+local walkSpeedInput = Instance.new("TextBox")
+walkSpeedInput.Text = tostring(humanoid.WalkSpeed)
+walkSpeedInput.Parent = systemGui
+
+local jumpPowerInput = Instance.new("TextBox")
+jumpPowerInput.Text = tostring(humanoid.JumpPower)
+jumpPowerInput.Parent = systemGui
+
+local submitButton = Instance.new("TextButton")
+submitButton.Text = "Apply Settings"
+submitButton.Parent = systemGui
+
+-- Verification GUI
+local function showVerificationGui()
+    local verifyGui = Instance.new("Frame")
+    verifyGui.Size = UDim2.new(0, 250, 0, 100)
+    verifyGui.Position = UDim2.new(0.5, -125, 0.5, -50)
+    verifyGui.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    verifyGui.Parent = screenGui
+
+    local verifyLabel = Instance.new("TextLabel")
+    verifyLabel.Text = "Verify: To put values above 500"
+    verifyLabel.Parent = verifyGui
+
+    local verifyButton = Instance.new("TextButton")
+    verifyButton.Text = "Hold to Verify (3s)"
+    verifyButton.Parent = verifyGui
+
+    local holding = false
+    verifyButton.MouseButton1Down:Connect(function()
+        holding = true
+        for i = 3, 1, -1 do
+            if not holding then break end
+            verifyButton.Text = "Hold to Verify (" .. i .. "s)"
+            wait(1)
+        end
+        if holding then
+            verifyGui:Destroy()
+            humanoid.WalkSpeed = tonumber(walkSpeedInput.Text)
+            humanoid.JumpPower = tonumber(jumpPowerInput.Text)
+        end
+    end)
+
+    verifyButton.MouseButton1Up:Connect(function()
+        holding = false
+        attempts = attempts + 1
+        if attempts >= 3 then
+            player:Kick("Verify first")
+        end
+    end)
+end
+
+-- Not Supported GUI
+local function showNotSupportedGui()
+    local notSupportedGui = Instance.new("Frame")
+    notSupportedGui.Size = UDim2.new(0, 300, 0, 150)
+    notSupportedGui.Position = UDim2.new(0.5, -150, 0.5, -75)
+    notSupportedGui.Parent = screenGui
+
+    local forceStartButton = Instance.new("TextButton")
+    forceStartButton.Text = "Force Run (3 Attempts)"
+    forceStartButton.Parent = notSupportedGui
+
+    forceStartButton.MouseButton1Click:Connect(function()
+        forceAttempts = forceAttempts + 1
+        if forceAttempts <= 3 then
+            local passed = math.random() > 0.1
+            if passed then
+                forceStartButton.Text = "Force Start Complete!"
+                wait(1)
+                notSupportedGui:Destroy()
+                systemGui.Visible = true
+            else
+                forceStartButton.Text = "Failed! Attempts: " .. forceAttempts
+            end
+        end
+
+        if forceAttempts == 3 and not forceSuccess then
+            forceStartButton.Text = "Failed and Reset Script"
+            wait(1)
+            forceStartButton:Destroy()
+            wait(10)
+            notSupportedGui:Destroy()
+        end
+    end)
+end
+
+-- Submit Button Functionality
+submitButton.MouseButton1Click:Connect(function()
+    local newWalkSpeed = tonumber(walkSpeedInput.Text)
+    local newJumpPower = tonumber(jumpPowerInput.Text)
+
+    if newWalkSpeed and newJumpPower then
+        if newWalkSpeed > 5000 or newJumpPower > 5000 then
+            walkSpeedInput.TextEditable = false
+            jumpPowerInput.TextEditable = false
+            walkSpeedInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            jumpPowerInput.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            walkSpeedInput.Text = "LIMIT REACHED"
+            jumpPowerInput.Text = "LIMIT REACHED"
+            return
+        end
+
+        if newWalkSpeed > 500 or newJumpPower > 500 then
+            showVerificationGui()
+        else
+            humanoid.WalkSpeed = newWalkSpeed
+            humanoid.JumpPower = newJumpPower
+        end
+    end
+end)
