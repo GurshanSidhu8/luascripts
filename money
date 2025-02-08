@@ -1,0 +1,41 @@
+-- Create the GUI elements
+local screenGui = Instance.new("ScreenGui")
+local inputBox = Instance.new("TextBox")
+local submitButton = Instance.new("TextButton")
+
+-- Parent GUI to Player's Screen
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- Configure Input Box
+inputBox.Size = UDim2.new(0.3, 0, 0.1, 0)
+inputBox.Position = UDim2.new(0.35, 0, 0.4, 0)
+inputBox.PlaceholderText = "Enter Money Amount"
+inputBox.Font = Enum.Font.Highway  -- Apply Highway font
+inputBox.TextSize = 20
+inputBox.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text
+inputBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)  -- Dark background
+inputBox.Parent = screenGui
+
+-- Configure Submit Button
+submitButton.Size = UDim2.new(0.3, 0, 0.1, 0)
+submitButton.Position = UDim2.new(0.35, 0, 0.55, 0)
+submitButton.Text = "Submit"
+submitButton.Font = Enum.Font.Highway  -- Apply Highway font
+submitButton.TextSize = 20
+submitButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text
+submitButton.BackgroundColor3 = Color3.fromRGB(70, 130, 180)  -- Steel Blue background
+submitButton.Parent = screenGui
+
+-- Button Click Event
+submitButton.MouseButton1Click:Connect(function()
+    local amount = tonumber(inputBox.Text)  -- Convert input text to number
+    if amount then  -- Check if valid number
+        local args = {
+            [1] = "change",
+            [2] = tostring(amount)
+        }
+        game:GetService("ReplicatedStorage").UpdateCash:FireServer(unpack(args))
+    else
+        warn("Invalid input! Please enter a number.")
+    end
+end)
