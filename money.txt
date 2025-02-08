@@ -1,35 +1,81 @@
--- Create the GUI elements
+-- Create GUI elements
 local screenGui = Instance.new("ScreenGui")
+local mainFrame = Instance.new("Frame")
 local inputBox = Instance.new("TextBox")
 local submitButton = Instance.new("TextButton")
+local closeButton = Instance.new("TextButton")
+local minimizeButton = Instance.new("TextButton")
+local openButton = Instance.new("TextButton")
 
 -- Parent GUI to Player's Screen
 screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- Configure Input Box
-inputBox.Size = UDim2.new(0.3, 0, 0.1, 0)
-inputBox.Position = UDim2.new(0.35, 0, 0.4, 0)
+-- Main Frame (Container for UI)
+mainFrame.Size = UDim2.new(0.35, 0, 0.3, 0)
+mainFrame.Position = UDim2.new(0.325, 0, 0.35, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+mainFrame.BorderSizePixel = 2
+mainFrame.Parent = screenGui
+mainFrame.Active = true
+mainFrame.Draggable = true -- Make GUI draggable
+
+-- Input Box
+inputBox.Size = UDim2.new(0.8, 0, 0.2, 0)
+inputBox.Position = UDim2.new(0.1, 0, 0.3, 0)
 inputBox.PlaceholderText = "Enter Money Amount"
-inputBox.Font = Enum.Font.Highway  -- Apply Highway font
+inputBox.Font = Enum.Font.Highway
 inputBox.TextSize = 20
-inputBox.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text
-inputBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)  -- Dark background
-inputBox.Parent = screenGui
+inputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+inputBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+inputBox.Parent = mainFrame
 
--- Configure Submit Button
-submitButton.Size = UDim2.new(0.3, 0, 0.1, 0)
-submitButton.Position = UDim2.new(0.35, 0, 0.55, 0)
+-- Submit Button
+submitButton.Size = UDim2.new(0.8, 0, 0.2, 0)
+submitButton.Position = UDim2.new(0.1, 0, 0.55, 0)
 submitButton.Text = "Submit"
-submitButton.Font = Enum.Font.Highway  -- Apply Highway font
+submitButton.Font = Enum.Font.Highway
 submitButton.TextSize = 20
-submitButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text
-submitButton.BackgroundColor3 = Color3.fromRGB(70, 130, 180)  -- Steel Blue background
-submitButton.Parent = screenGui
+submitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+submitButton.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
+submitButton.Parent = mainFrame
 
--- Button Click Event
+-- Close Button (X)
+closeButton.Size = UDim2.new(0.15, 0, 0.15, 0)
+closeButton.Position = UDim2.new(0.825, 0, 0, 0)
+closeButton.Text = "X"
+closeButton.Font = Enum.Font.Highway
+closeButton.TextSize = 20
+closeButton.TextColor3 = Color3.fromRGB(255, 0, 0)
+closeButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+closeButton.Parent = mainFrame
+
+-- Minimize Button (-)
+minimizeButton.Size = UDim2.new(0.15, 0, 0.15, 0)
+minimizeButton.Position = UDim2.new(0.65, 0, 0, 0)
+minimizeButton.Text = "-"
+minimizeButton.Font = Enum.Font.Highway
+minimizeButton.TextSize = 20
+minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 0)
+minimizeButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+minimizeButton.Parent = mainFrame
+
+-- Open Button (Hidden Initially)
+openButton.Size = UDim2.new(0.15, 0, 0.1, 0)
+openButton.Position = UDim2.new(0.02, 0, 0.02, 0)
+openButton.Text = "Open"
+openButton.Font = Enum.Font.Highway
+openButton.TextSize = 18
+openButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+openButton.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+openButton.Visible = false
+openButton.Parent = screenGui
+
+-- Button Click Events
+
+-- Submit Button Functionality
 submitButton.MouseButton1Click:Connect(function()
-    local amount = tonumber(inputBox.Text)  -- Convert input text to number
-    if amount then  -- Check if valid number
+    local amount = tonumber(inputBox.Text)
+    if amount then
         local args = {
             [1] = "change",
             [2] = tostring(amount)
@@ -38,4 +84,21 @@ submitButton.MouseButton1Click:Connect(function()
     else
         warn("Invalid input! Please enter a number.")
     end
+end)
+
+-- Close Button (Destroys GUI)
+closeButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+-- Minimize Button (Hides Main GUI, Shows Open Button)
+minimizeButton.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+    openButton.Visible = true
+end)
+
+-- Open Button (Restores GUI)
+openButton.MouseButton1Click:Connect(function()
+    mainFrame.Visible = true
+    openButton.Visible = false
 end)
