@@ -82,6 +82,8 @@ openButton.Font = Enum.Font.Highway
 openButton.TextSize = 18
 openButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 openButton.Visible = false
+openButton.Active = true
+openButton.Draggable = true
 openButton.Parent = screenGui
 
 -- Function to send chat message
