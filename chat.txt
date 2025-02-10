@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
-local playerGui = player:FindFirstChild("PlayerGui") or Instance.new("PlayerGui", player)
+local playerGui = player:FindFirstChildOfClass("PlayerGui") -- Ensures we get the correct PlayerGui
 
 -- Create ScreenGui
 local screenGui = Instance.new("ScreenGui")
@@ -19,7 +20,7 @@ frame.Parent = screenGui
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 30)
 title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-title.Text = "Chat Sender Pro"
+title.Text = "Chat Sender"
 title.Font = Enum.Font.Highway
 title.TextSize = 20
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -85,8 +86,13 @@ openButton.Parent = screenGui
 local function sendMessage()
     local message = inputBox.Text
     if message and message ~= "" then
-        game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(message, "All")
-        inputBox.Text = ""  -- Clear input after sending
+        local chatEvent = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+        if chatEvent then
+            chatEvent.SayMessageRequest:FireServer(message, "All")
+        else
+            warn("Chat event not found in ReplicatedStorage")
+        end
+        inputBox.Text = "" -- Clear input after sending
     end
 end
 
