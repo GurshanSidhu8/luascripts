@@ -1,7 +1,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
-local playerGui = player:FindFirstChildOfClass("PlayerGui") -- Ensures we get the correct PlayerGui
+local playerGui = player:FindFirstChildOfClass("PlayerGui")
 
 -- Create ScreenGui
 local screenGui = Instance.new("ScreenGui")
@@ -14,6 +14,8 @@ frame.Size = UDim2.new(0, 250, 0, 150)
 frame.Position = UDim2.new(0.5, -125, 0.5, -75)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BorderSizePixel = 2
+frame.Active = true -- Makes it draggable
+frame.Draggable = true -- Enables dragging
 frame.Parent = screenGui
 
 -- Title
@@ -83,8 +85,8 @@ openButton.Visible = false
 openButton.Parent = screenGui
 
 -- Function to send chat message
-local function sendMessage()
-    local message = inputBox.Text
+local function sendMessage(text)
+    local message = text or inputBox.Text -- Use custom message if provided
     if message and message ~= "" then
         local chatEvent = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
         if chatEvent then
@@ -96,11 +98,16 @@ local function sendMessage()
     end
 end
 
+-- Auto-send welcome message on execution
+sendMessage("Welcome to Message Sender Pro!")
+
 -- Button Functions
-sendButton.MouseButton1Click:Connect(sendMessage)
+sendButton.MouseButton1Click:Connect(function()
+    sendMessage()
+end)
 
 closeButton.MouseButton1Click:Connect(function()
-    screenGui:Destroy()  -- Destroy UI but script keeps running
+    screenGui:Destroy() -- Destroy UI but script keeps running
 end)
 
 minimizeButton.MouseButton1Click:Connect(function()
