@@ -14,8 +14,8 @@ frame.Size = UDim2.new(0, 250, 0, 150)
 frame.Position = UDim2.new(0.5, -125, 0.5, -75)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BorderSizePixel = 2
-frame.Active = true
-frame.Draggable = true
+frame.Active = true -- Makes it draggable
+frame.Draggable = true -- Enables dragging
 frame.Parent = screenGui
 
 -- Title
@@ -83,45 +83,23 @@ openButton.TextSize = 18
 openButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 openButton.Visible = false
 openButton.Parent = screenGui
-openButton.Active = true
-openButton.Draggable = true -- Make open button draggable
 
--- Variables
-local emptyMessageCount = 0
-local chatBlocked = false -- Prevents spam when script executes
-
--- Function to send a filtered message
+-- Function to send chat message
 local function sendMessage(text)
-    local message = text or inputBox.Text
-
-    -- If message is empty, count it
-    if not message or message == "" then
-        emptyMessageCount = emptyMessageCount + 1
-        if emptyMessageCount >= 10 then
-            chatBlocked = true -- Block all future messages
-            message = "[Message Sender] Chat Prohibited"
+    local message = text or inputBox.Text -- Use custom message if provided
+    if message and message ~= "" then
+        local chatEvent = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+        if chatEvent then
+            chatEvent.SayMessageRequest:FireServer(message, "All")
         else
-            return -- Ignore empty messages
+            warn("Chat event not found in ReplicatedStorage")
         end
-    else
-        emptyMessageCount = 0 -- Reset counter if a real message is sent
+        inputBox.Text = "" -- Clear input after sending
     end
-
-    -- If chat is blocked, override the message
-    if chatBlocked then
-        message = "[Message Sender] Chat Prohibited"
-    end
-
-    -- Send message through chat
-    local chatEvent = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
-    if chatEvent then
-        chatEvent.SayMessageRequest:FireServer(message, "All")
-    else
-        warn("Chat event not found in ReplicatedStorage")
-    end
-
-    inputBox.Text = "" -- Clear input after sending
 end
+
+-- Auto-send welcome message on execution
+sendMessage("Welcome to Message Sender Pro!")
 
 -- Button Functions
 sendButton.MouseButton1Click:Connect(function()
@@ -129,7 +107,7 @@ sendButton.MouseButton1Click:Connect(function()
 end)
 
 closeButton.MouseButton1Click:Connect(function()
-    screenGui:Destroy()
+    screenGui:Destroy() -- Destroy UI but script keeps running
 end)
 
 minimizeButton.MouseButton1Click:Connect(function()
@@ -141,15 +119,3 @@ openButton.MouseButton1Click:Connect(function()
     frame.Visible = true
     openButton.Visible = false
 end)
-
--- Block all future chat messages from the player once chat is prohibited
-local chatEvent = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
-if chatEvent then
-    chatEvent.OnMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
-        if messageData.FromSpeaker == player.Name then
-            if chatBlocked then
-                sendMessage("[Message Sender] Chat Prohibited")
-            end
-        end
-    end)
-end
