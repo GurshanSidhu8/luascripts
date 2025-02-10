@@ -1,0 +1,108 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerGui = player:FindFirstChild("PlayerGui") or Instance.new("PlayerGui", player)
+
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = playerGui
+screenGui.Name = "ChatSenderGUI"
+
+-- Main Frame
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 250, 0, 150)
+frame.Position = UDim2.new(0.5, -125, 0.5, -75)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 2
+frame.Parent = screenGui
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+title.Text = "Chat Sender"
+title.Font = Enum.Font.Highway
+title.TextSize = 20
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Parent = frame
+
+-- Input Box
+local inputBox = Instance.new("TextBox")
+inputBox.Size = UDim2.new(1, -20, 0, 40)
+inputBox.Position = UDim2.new(0, 10, 0, 40)
+inputBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+inputBox.PlaceholderText = "Enter message..."
+inputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+inputBox.Font = Enum.Font.Highway
+inputBox.TextSize = 18
+inputBox.Parent = frame
+
+-- Send Button
+local sendButton = Instance.new("TextButton")
+sendButton.Size = UDim2.new(1, -20, 0, 40)
+sendButton.Position = UDim2.new(0, 10, 0, 90)
+sendButton.BackgroundColor3 = Color3.fromRGB(20, 120, 50)
+sendButton.Text = "Send"
+sendButton.Font = Enum.Font.Highway
+sendButton.TextSize = 18
+sendButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+sendButton.Parent = frame
+
+-- Close Button
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -35, 0, 0)
+closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+closeButton.Text = "×"
+closeButton.Font = Enum.Font.Highway
+closeButton.TextSize = 22
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.Parent = frame
+
+-- Minimize Button
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Size = UDim2.new(0, 30, 0, 30)
+minimizeButton.Position = UDim2.new(1, -70, 0, 0)
+minimizeButton.BackgroundColor3 = Color3.fromRGB(200, 200, 50)
+minimizeButton.Text = "-"
+minimizeButton.Font = Enum.Font.Highway
+minimizeButton.TextSize = 22
+minimizeButton.TextColor3 = Color3.fromRGB(50, 50, 50)
+minimizeButton.Parent = frame
+
+-- Open Button (Hidden Initially)
+local openButton = Instance.new("TextButton")
+openButton.Size = UDim2.new(0, 100, 0, 40)
+openButton.Position = UDim2.new(1, -110, 0, 10)
+openButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+openButton.Text = "Open"
+openButton.Font = Enum.Font.Highway
+openButton.TextSize = 18
+openButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+openButton.Visible = false
+openButton.Parent = screenGui
+
+-- Function to send chat message
+local function sendMessage()
+    local message = inputBox.Text
+    if message and message ~= "" then
+        game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(message, "All")
+        inputBox.Text = ""  -- Clear input after sending
+    end
+end
+
+-- Button Functions
+sendButton.MouseButton1Click:Connect(sendMessage)
+
+closeButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()  -- Destroy UI but script keeps running
+end)
+
+minimizeButton.MouseButton1Click:Connect(function()
+    frame.Visible = false
+    openButton.Visible = true
+end)
+
+openButton.MouseButton1Click:Connect(function()
+    frame.Visible = true
+    openButton.Visible = false
+end)
