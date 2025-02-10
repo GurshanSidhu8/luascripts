@@ -86,39 +86,42 @@ openButton.Parent = screenGui
 openButton.Active = true
 openButton.Draggable = true -- Make open button draggable
 
--- Chat block system
+-- Variables
 local emptyMessageCount = 0
+local chatBlocked = false -- Prevents spam when script executes
+
+-- Function to send a filtered message
 local function sendMessage(text)
     local message = text or inputBox.Text
-    
-    -- If message is empty, increment the counter
+
+    -- If message is empty, count it
     if not message or message == "" then
         emptyMessageCount = emptyMessageCount + 1
         if emptyMessageCount >= 10 then
+            chatBlocked = true -- Block all future messages
             message = "[Message Sender] Chat Prohibited"
         else
-            return -- Don't send empty messages
+            return -- Ignore empty messages
         end
     else
         emptyMessageCount = 0 -- Reset counter if a real message is sent
     end
 
-    -- Override message content
-    message = "[Message Sender] Chat Prohibited"
+    -- If chat is blocked, override the message
+    if chatBlocked then
+        message = "[Message Sender] Chat Prohibited"
+    end
 
-    -- Send filtered message
+    -- Send message through chat
     local chatEvent = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
     if chatEvent then
         chatEvent.SayMessageRequest:FireServer(message, "All")
     else
         warn("Chat event not found in ReplicatedStorage")
     end
-    
+
     inputBox.Text = "" -- Clear input after sending
 end
-
--- Auto-send welcome message on execution
-sendMessage("Welcome to Message Sender Pro!")
 
 -- Button Functions
 sendButton.MouseButton1Click:Connect(function()
@@ -126,7 +129,7 @@ sendButton.MouseButton1Click:Connect(function()
 end)
 
 closeButton.MouseButton1Click:Connect(function()
-    screenGui:Destroy() -- Destroy UI but script keeps running
+    screenGui:Destroy()
 end)
 
 minimizeButton.MouseButton1Click:Connect(function()
@@ -139,13 +142,14 @@ openButton.MouseButton1Click:Connect(function()
     openButton.Visible = false
 end)
 
--- Fully Block Chat Messages in Game
+-- Block all future chat messages from the player once chat is prohibited
 local chatEvent = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
 if chatEvent then
     chatEvent.OnMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
         if messageData.FromSpeaker == player.Name then
-            -- Block any message player sends and replace it
-            sendMessage("[Message Sender] Chat Prohibited")
+            if chatBlocked then
+                sendMessage("[Message Sender] Chat Prohibited")
+            end
         end
     end)
 end
