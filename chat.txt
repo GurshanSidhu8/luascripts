@@ -14,8 +14,8 @@ frame.Size = UDim2.new(0, 250, 0, 150)
 frame.Position = UDim2.new(0.5, -125, 0.5, -75)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BorderSizePixel = 2
-frame.Active = true -- Makes it draggable
-frame.Draggable = true -- Enables dragging
+frame.Active = true
+frame.Draggable = true
 frame.Parent = screenGui
 
 -- Title
@@ -82,22 +82,39 @@ openButton.Font = Enum.Font.Highway
 openButton.TextSize = 18
 openButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 openButton.Visible = false
-openButton.Active = true
-openButton.Draggable = true
 openButton.Parent = screenGui
+openButton.Active = true
+openButton.Draggable = true -- Make open button draggable
 
--- Function to send chat message
+-- Chat block system
+local emptyMessageCount = 0
 local function sendMessage(text)
-    local message = text or inputBox.Text -- Use custom message if provided
-    if message and message ~= "" then
-        local chatEvent = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
-        if chatEvent then
-            chatEvent.SayMessageRequest:FireServer(message, "All")
+    local message = text or inputBox.Text
+    
+    -- If message is empty, increment the counter
+    if not message or message == "" then
+        emptyMessageCount = emptyMessageCount + 1
+        if emptyMessageCount >= 10 then
+            message = "[Message Sender] Chat Prohibited"
         else
-            warn("Chat event not found in ReplicatedStorage")
+            return -- Don't send empty messages
         end
-        inputBox.Text = "" -- Clear input after sending
+    else
+        emptyMessageCount = 0 -- Reset counter if a real message is sent
     end
+
+    -- Override message content
+    message = "[Message Sender] Chat Prohibited"
+
+    -- Send filtered message
+    local chatEvent = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+    if chatEvent then
+        chatEvent.SayMessageRequest:FireServer(message, "All")
+    else
+        warn("Chat event not found in ReplicatedStorage")
+    end
+    
+    inputBox.Text = "" -- Clear input after sending
 end
 
 -- Auto-send welcome message on execution
@@ -121,3 +138,14 @@ openButton.MouseButton1Click:Connect(function()
     frame.Visible = true
     openButton.Visible = false
 end)
+
+-- Fully Block Chat Messages in Game
+local chatEvent = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+if chatEvent then
+    chatEvent.OnMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
+        if messageData.FromSpeaker == player.Name then
+            -- Block any message player sends and replace it
+            sendMessage("[Message Sender] Chat Prohibited")
+        end
+    end)
+end
