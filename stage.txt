@@ -1,0 +1,31 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Create Button
+local button = Instance.new("TextButton")
+button.Parent = screenGui
+button.Size = UDim2.new(0, 200, 0, 50)
+button.Position = UDim2.new(0.5, -100, 0.8, 0)
+button.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.Font = Enum.Font.Highway
+button.Text = "Start"
+button.TextScaled = true
+
+button.MouseButton1Click:Connect(function()
+    humanoid.WalkSpeed = 100000  -- Set speed
+
+    -- Move the character forward
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        while humanoid.WalkSpeed == 100000 do
+            hrp.Velocity = hrp.CFrame.LookVector * humanoid.WalkSpeed
+            task.wait()
+        end
+    end
+end)
