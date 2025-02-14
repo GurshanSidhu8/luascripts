@@ -1,0 +1,146 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local savedPosition = nil
+
+-- Creating the ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Creating the Frame (Main UI)
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 150)
+frame.Position = UDim2.new(0.5, -100, 0.3, 0)
+frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+frame.Draggable = true
+frame.Active = true
+frame.Parent = screenGui
+
+-- Title Label
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 25)
+titleLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+titleLabel.Text = "Player Coordinates"
+titleLabel.Font = Enum.Font.Highway
+titleLabel.TextSize = 14
+titleLabel.TextColor3 = Color3.new(1, 1, 1)
+titleLabel.Parent = frame
+
+-- Coordinates Label
+local coordsLabel = Instance.new("TextLabel")
+coordsLabel.Size = UDim2.new(1, 0, 0, 40)
+coordsLabel.Position = UDim2.new(0, 0, 0, 30)
+coordsLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+coordsLabel.Text = "X: 0, Y: 0, Z: 0"
+coordsLabel.Font = Enum.Font.Highway
+coordsLabel.TextSize = 14
+coordsLabel.TextColor3 = Color3.new(1, 1, 1)
+coordsLabel.Parent = frame
+
+-- Save Coordinates Button
+local saveButton = Instance.new("TextButton")
+saveButton.Size = UDim2.new(1, 0, 0, 30)
+saveButton.Position = UDim2.new(0, 0, 0, 75)
+saveButton.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
+saveButton.Text = "Save Coordinates"
+saveButton.Font = Enum.Font.Highway
+saveButton.TextSize = 14
+saveButton.TextColor3 = Color3.new(1, 1, 1)
+saveButton.Parent = frame
+
+-- Teleport Button
+local teleportButton = Instance.new("TextButton")
+teleportButton.Size = UDim2.new(1, 0, 0, 30)
+teleportButton.Position = UDim2.new(0, 0, 0, 110)
+teleportButton.BackgroundColor3 = Color3.fromRGB(34, 139, 34)
+teleportButton.Text = "Teleport"
+teleportButton.Font = Enum.Font.Highway
+teleportButton.TextSize = 14
+teleportButton.TextColor3 = Color3.new(1, 1, 1)
+teleportButton.Parent = frame
+
+-- Close Button
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 25, 0, 25)
+closeButton.Position = UDim2.new(1, -25, 0, 0)
+closeButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+closeButton.Text = "X"
+closeButton.Font = Enum.Font.Highway
+closeButton.TextSize = 14
+closeButton.TextColor3 = Color3.new(1, 1, 1)
+closeButton.Parent = frame
+
+-- Minimize Button
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Size = UDim2.new(0, 25, 0, 25)
+minimizeButton.Position = UDim2.new(1, -50, 0, 0)
+minimizeButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+minimizeButton.Text = "-"
+minimizeButton.Font = Enum.Font.Highway
+minimizeButton.TextSize = 14
+minimizeButton.TextColor3 = Color3.new(1, 1, 1)
+minimizeButton.Parent = frame
+
+-- Open Button (Hidden initially)
+local openButton = Instance.new("TextButton")
+openButton.Size = UDim2.new(0, 80, 0, 30)
+openButton.Position = UDim2.new(1, -90, 0, 10)
+openButton.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
+openButton.Text = "Open"
+openButton.Font = Enum.Font.Highway
+openButton.TextSize = 14
+openButton.TextColor3 = Color3.new(1, 1, 1)
+openButton.Parent = screenGui
+openButton.Visible = false
+
+-- Function to update coordinates label
+local function updateCoords()
+	while true do
+		local root = character:FindFirstChild("HumanoidRootPart")
+		if root then
+			local pos = root.Position
+			coordsLabel.Text = string.format("X: %.2f, Y: %.2f, Z: %.2f", pos.X, pos.Y, pos.Z)
+		end
+		wait(0.5)
+	end
+end
+
+-- Save Coordinates Button Function
+saveButton.MouseButton1Click:Connect(function()
+	local root = character:FindFirstChild("HumanoidRootPart")
+	if root then
+		savedPosition = root.Position
+		saveButton.Text = "Saved!"
+		wait(1)
+		saveButton.Text = "Save Coordinates"
+	end
+end)
+
+-- Teleport Button Function
+teleportButton.MouseButton1Click:Connect(function()
+	if savedPosition then
+		local root = character:FindFirstChild("HumanoidRootPart")
+		if root then
+			root.Position = savedPosition
+		end
+	end
+end)
+
+-- Close Button Function
+closeButton.MouseButton1Click:Connect(function()
+	screenGui:Destroy()
+end)
+
+-- Minimize Button Function
+minimizeButton.MouseButton1Click:Connect(function()
+	frame.Visible = false
+	openButton.Visible = true
+end)
+
+-- Open Button Function
+openButton.MouseButton1Click:Connect(function()
+	frame.Visible = true
+	openButton.Visible = false
+end)
+
+-- Start updating coordinates
+task.spawn(updateCoords)
