@@ -1,103 +1,151 @@
--- Create UI Elements
+local httpService = game:GetService("HttpService")
+
+-- Fetch Key from URL
+local keyURL = "https://raw.githubusercontent.com/GurshanSidhu8/luascripts/refs/heads/main/key.txt"
+local correctKey = nil
+
+local success, response = pcall(function()
+    return game:HttpGet(keyURL)
+end)
+
+if success then
+    correctKey = response:gsub("%s+", "") -- Trim whitespace
+else
+    warn("Failed to fetch key!")
+    return
+end
+
+-- Create Key UI
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "MusicPlayerUI"
+screenGui.Name = "KeySystem"
 screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 300, 0, 200)
-frame.Position = UDim2.new(0.5, -150, 0.4, -100)
-frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-frame.BorderSizePixel = 2
-frame.Parent = screenGui
+local keyFrame = Instance.new("Frame")
+keyFrame.Size = UDim2.new(0, 300, 0, 150)
+keyFrame.Position = UDim2.new(0.5, -150, 0.4, -75)
+keyFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+keyFrame.Parent = screenGui
 
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 40)
-title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-title.Text = "Roblox Music Player"
-title.Font = Enum.Font.Highway
-title.TextSize = 18
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Parent = frame
+local keyTitle = Instance.new("TextLabel")
+keyTitle.Size = UDim2.new(1, 0, 0, 40)
+keyTitle.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+keyTitle.Text = "Enter Key to Unlock"
+keyTitle.Font = Enum.Font.Highway
+keyTitle.TextSize = 18
+keyTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyTitle.Parent = keyFrame
 
-local songInput = Instance.new("TextBox")
-songInput.Size = UDim2.new(0.8, 0, 0, 40)
-songInput.Position = UDim2.new(0.1, 0, 0.3, 0)
-songInput.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-songInput.Text = "Enter Song ID..."
-songInput.Font = Enum.Font.Highway
-songInput.TextSize = 16
-songInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-songInput.Parent = frame
+local keyInput = Instance.new("TextBox")
+keyInput.Size = UDim2.new(0.8, 0, 0, 40)
+keyInput.Position = UDim2.new(0.1, 0, 0.4, 0)
+keyInput.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+keyInput.Text = "Enter Key..."
+keyInput.Font = Enum.Font.Highway
+keyInput.TextSize = 16
+keyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyInput.Parent = keyFrame
 
-local playButton = Instance.new("TextButton")
-playButton.Size = UDim2.new(0.8, 0, 0, 40)
-playButton.Position = UDim2.new(0.1, 0, 0.55, 0)
-playButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-playButton.Text = "Play Song"
-playButton.Font = Enum.Font.Highway
-playButton.TextSize = 16
-playButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-playButton.Parent = frame
+local submitKeyButton = Instance.new("TextButton")
+submitKeyButton.Size = UDim2.new(0.8, 0, 0, 40)
+submitKeyButton.Position = UDim2.new(0.1, 0, 0.7, 0)
+submitKeyButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+submitKeyButton.Text = "Submit Key"
+submitKeyButton.Font = Enum.Font.Highway
+submitKeyButton.TextSize = 16
+submitKeyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+submitKeyButton.Parent = keyFrame
 
-local closeButton = Instance.new("TextButton")
-closeButton.Size = UDim2.new(0.15, 0, 0.2, 0)
-closeButton.Position = UDim2.new(0.82, 0, 0, 5)
-closeButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-closeButton.Text = "X"
-closeButton.Font = Enum.Font.Highway
-closeButton.TextSize = 18
-closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeButton.Parent = frame
+-- Function to create the Music Player UI
+local function createMusicPlayer()
+    keyFrame.Visible = false
 
-local minimizeButton = Instance.new("TextButton")
-minimizeButton.Size = UDim2.new(0.15, 0, 0.2, 0)
-minimizeButton.Position = UDim2.new(0.65, 0, 0, 5)
-minimizeButton.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
-minimizeButton.Text = "-"
-minimizeButton.Font = Enum.Font.Highway
-minimizeButton.TextSize = 18
-minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-minimizeButton.Parent = frame
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 300, 0, 200)
+    frame.Position = UDim2.new(0.5, -150, 0.4, -100)
+    frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    frame.Parent = screenGui
 
-local openButton = Instance.new("TextButton")
-openButton.Size = UDim2.new(0, 100, 0, 40)
-openButton.Position = UDim2.new(1, -110, 0, 10)
-openButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-openButton.Text = "Open"
-openButton.Font = Enum.Font.Highway
-openButton.TextSize = 16
-openButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-openButton.Visible = false
-openButton.Parent = screenGui
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 0, 40)
+    title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    title.Text = "Roblox Music Player"
+    title.Font = Enum.Font.Highway
+    title.TextSize = 18
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.Parent = frame
 
--- Create Sound Object
-local sound = Instance.new("Sound")
-sound.Parent = game.Workspace
-sound.Looped = true
+    local songInput = Instance.new("TextBox")
+    songInput.Size = UDim2.new(0.8, 0, 0, 40)
+    songInput.Position = UDim2.new(0.1, 0, 0.3, 0)
+    songInput.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    songInput.Text = "Enter Song ID..."
+    songInput.Font = Enum.Font.Highway
+    songInput.TextSize = 16
+    songInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+    songInput.Parent = frame
 
--- Play Button Functionality
-playButton.MouseButton1Click:Connect(function()
-	local songId = songInput.Text
-	if tonumber(songId) then
-		sound.SoundId = "rbxassetid://" .. songId
-		sound:Play()
-	end
-end)
+    local playButton = Instance.new("TextButton")
+    playButton.Size = UDim2.new(0.8, 0, 0, 40)
+    playButton.Position = UDim2.new(0.1, 0, 0.55, 0)
+    playButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+    playButton.Text = "Play Song"
+    playButton.Font = Enum.Font.Highway
+    playButton.TextSize = 16
+    playButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    playButton.Parent = frame
 
--- Close Button Functionality
-closeButton.MouseButton1Click:Connect(function()
-	sound:Stop()
-	screenGui:Destroy()
-end)
+    local closeButton = Instance.new("TextButton")
+    closeButton.Size = UDim2.new(0.15, 0, 0.2, 0)
+    closeButton.Position = UDim2.new(0.82, 0, 0, 5)
+    closeButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+    closeButton.Text = "X"
+    closeButton.Font = Enum.Font.Highway
+    closeButton.TextSize = 18
+    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.Parent = frame
 
--- Minimize Button Functionality
-minimizeButton.MouseButton1Click:Connect(function()
-	frame.Visible = false
-	openButton.Visible = true
-end)
+    local minimizeButton = Instance.new("TextButton")
+    minimizeButton.Size = UDim2.new(0.15, 0, 0.2, 0)
+    minimizeButton.Position = UDim2.new(0.65, 0, 0, 5)
+    minimizeButton.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
+    minimizeButton.Text = "-"
+    minimizeButton.Font = Enum.Font.Highway
+    minimizeButton.TextSize = 18
+    minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    minimizeButton.Parent = frame
 
--- Open Button Functionality
-openButton.MouseButton1Click:Connect(function()
-	frame.Visible = true
-	openButton.Visible = false
+    local sound = Instance.new("Sound")
+    sound.Parent = game.Workspace
+    sound.Looped = true
+
+    playButton.MouseButton1Click:Connect(function()
+        local songId = songInput.Text
+        if tonumber(songId) then
+            sound.SoundId = "rbxassetid://" .. songId
+            sound:Play()
+        end
+    end)
+
+    closeButton.MouseButton1Click:Connect(function()
+        sound:Stop()
+        screenGui:Destroy()
+    end)
+
+    minimizeButton.MouseButton1Click:Connect(function()
+        frame.Visible = false
+    end)
+end
+
+-- Key Submission Function
+submitKeyButton.MouseButton1Click:Connect(function()
+    local enteredKey = keyInput.Text:gsub("%s+", "")
+    if enteredKey == correctKey then
+        createMusicPlayer()
+    else
+        keyTitle.Text = "Invalid Key!"
+        keyTitle.TextColor3 = Color3.fromRGB(255, 0, 0)
+        wait(2)
+        keyTitle.Text = "Enter Key to Unlock"
+        keyTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
 end)
