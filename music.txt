@@ -1,7 +1,7 @@
 local httpService = game:GetService("HttpService")
 
 -- Fetch Key from URL
-local keyURL = "http://sfcdays.unaux.com/scripts/key.txt"
+local keyURL = "http://sfcdays.unaux.com/scripts/key.html"
 local correctKey = nil
 
 local success, response = pcall(function()
