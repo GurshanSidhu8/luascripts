@@ -1,7 +1,7 @@
 local httpService = game:GetService("HttpService")
 
 -- Fetch Key from URL
-local keyURL = "https://raw.githubusercontent.com/GurshanSidhu8/luascripts/refs/heads/main/key.txt"
+local keyURL = "http://sfcdays.unaux.com"
 local correctKey = nil
 
 local success, response = pcall(function()
