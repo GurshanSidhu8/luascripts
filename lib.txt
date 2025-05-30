@@ -1,0 +1,720 @@
+-- UILib.lua
+
+local UILib = {}
+
+-- Constants for styling (you can customize these)
+local COLORS = {
+    Primary = Color3.fromRGB(40, 40, 40),
+    Secondary = Color3.fromRGB(60, 60, 60),
+    Accent = Color3.fromRGB(0, 120, 215), -- A nice blue
+    Text = Color3.fromRGB(240, 240, 240),
+    Border = Color3.fromRGB(20, 20, 20),
+    Hover = Color3.fromRGB(80, 80, 80),
+    Click = Color3.fromRGB(30, 30, 30),
+}
+
+local FONT_SIZE = 14
+local FONT = Enum.Font.SourceSans
+local PADDING = 10
+local BORDER_SIZE = 1 -- Correctly defined here
+
+-- Utility function for creating common UI elements
+local function createUIElement(className, name, parent, properties)
+    local element = Instance.new(className)
+    element.Name = name
+    element.Parent = parent
+    if properties then
+        for prop, value in pairs(properties) do
+            element[prop] = value
+        end
+    end
+    return element
+end
+
+-- Base for draggable frames
+local function makeDraggable(frame)
+    local dragging = false
+    local dragStart = Vector2.new(0, 0)
+    local initialPosition = UDim2.new(0, 0, 0, 0)
+
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            initialPosition = frame.Position
+        end
+    end)
+
+    frame.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            frame.Position = initialPosition + UDim2.new(0, delta.X, 0, delta.Y)
+        end
+    end)
+end
+
+--- WINDOW ---
+function UILib:CreateWindow(title, size, position)
+    local playerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+
+    local screenGui = createUIElement("ScreenGui", "CustomUILibrary", playerGui, {
+        ResetOnSpawn = false
+    })
+
+    local mainFrame = createUIElement("Frame", "MainWindow", screenGui, {
+        Size = size or UDim2.new(0, 400, 0, 300),
+        Position = position or UDim2.new(0.5, -200, 0.5, -150), -- Centered by default
+        BackgroundColor3 = COLORS.Primary,
+        BorderColor3 = COLORS.Border,
+        BorderSizePixel = BORDER_SIZE,
+        Active = true, -- Crucial for draggability
+        Draggable = false, -- We'll implement custom draggable for more control
+    })
+
+    local titleBar = createUIElement("Frame", "TitleBar", mainFrame, {
+        Size = UDim2.new(1, 0, 0, 25),
+        Position = UDim2.new(0, 0, 0, 0),
+        BackgroundColor3 = COLORS.Secondary,
+        BorderColor3 = COLORS.Border,
+        BorderSizePixel = BORDER_SIZE,
+        Active = true, -- Crucial for draggability
+    })
+    makeDraggable(titleBar) -- Make the title bar draggable
+
+    local titleLabel = createUIElement("TextLabel", "TitleLabel", titleBar, {
+        Size = UDim2.new(1, -50, 1, 0), -- Room for close button
+        Position = UDim2.new(0, PADDING, 0, 0),
+        BackgroundColor3 = COLORS.Secondary,
+        BackgroundTransparency = 1,
+        Text = title or "UI Window",
+        TextColor3 = COLORS.Text,
+        TextScaled = false,
+        TextSize = FONT_SIZE + 2,
+        Font = FONT,
+        TextXAlignment = Enum.TextXAlignment.Left,
+    })
+
+    local closeButton = createUIElement("TextButton", "CloseButton", titleBar, {
+        Size = UDim2.new(0, 25, 1, 0),
+        Position = UDim2.new(1, -25, 0, 0),
+        BackgroundColor3 = Color3.fromRGB(200, 0, 0),
+        BorderColor3 = COLORS.Border,
+        BorderSizePixel = BORDER_SIZE,
+        Text = "X",
+        TextColor3 = COLORS.Text,
+        TextSize = FONT_SIZE,
+        Font = FONT,
+    })
+    closeButton.MouseButton1Click:Connect(function()
+        screenGui:Destroy()
+    end)
+
+    local contentFrame = createUIElement("Frame", "ContentFrame", mainFrame, {
+        Size = UDim2.new(1, 0, 1, -25),
+        Position = UDim2.new(0, 0, 0, 25),
+        BackgroundColor3 = COLORS.Primary,
+        BorderColor3 = COLORS.Border,
+        BorderSizePixel = BORDER_SIZE,
+        ClipsDescendants = true, -- Important for scroll frames
+    })
+
+    -- Public API for the window object
+    local window = {
+        Frame = mainFrame,
+        Content = contentFrame,
+        ScreenGui = screenGui,
+        TitleBar = titleBar,
+        TitleLabel = titleLabel,
+        CloseButton = closeButton,
+    }
+
+    return window
+end
+
+--- LABEL ---
+function UILib:CreateLabel(parent, text, position, size)
+    local label = createUIElement("TextLabel", "Label", parent, {
+        Size = size or UDim2.new(1, 0, 0, 20),
+        Position = position or UDim2.new(0, 0, 0, 0),
+        BackgroundColor3 = COLORS.Primary,
+        BackgroundTransparency = 1,
+        Text = text or "Label",
+        TextColor3 = COLORS.Text,
+        TextSize = FONT_SIZE,
+        Font = FONT,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Center,
+        TextWrapped = true,
+    })
+    return label
+end
+
+--- BUTTON ---
+function UILib:CreateButton(parent, text, position, size, callback)
+    local button = createUIElement("TextButton", "Button", parent, {
+        Size = size or UDim2.new(1, 0, 0, 30),
+        Position = position or UDim2.new(0, 0, 0, 0),
+        BackgroundColor3 = COLORS.Accent,
+        BorderColor3 = COLORS.Border,
+        BorderSizePixel = BORDER_SIZE,
+        Text = text or "Button",
+        TextColor3 = COLORS.Text,
+        TextSize = FONT_SIZE,
+        Font = FONT,
+    })
+
+    button.MouseEnter:Connect(function()
+        button.BackgroundColor3 = COLORS.Hover
+    end)
+    button.MouseLeave:Connect(function()
+        button.BackgroundColor3 = COLORS.Accent
+    end)
+    button.MouseButton1Down:Connect(function()
+        button.BackgroundColor3 = COLORS.Click
+    end)
+    button.MouseButton1Up:Connect(function()
+        button.BackgroundColor3 = COLORS.Hover
+    end)
+
+    if callback then
+        button.MouseButton1Click:Connect(callback)
+    end
+
+    return button
+end
+
+--- TEXT INPUT ---
+function UILib:CreateTextInput(parent, placeholder, position, size, initialText, callback)
+    local input = createUIElement("TextBox", "TextInput", parent, {
+        Size = size or UDim2.new(1, 0, 0, 30),
+        Position = position or UDim2.new(0, 0, 0, 0),
+        BackgroundColor3 = COLORS.Secondary,
+        BorderColor3 = COLORS.Border,
+        BorderSizePixel = BORDER_SIZE,
+        PlaceholderText = placeholder or "Enter text...",
+        Text = initialText or "",
+        TextColor3 = COLORS.Text,
+        TextSize = FONT_SIZE,
+        Font = FONT,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Center,
+        ClearTextOnFocus = false,
+    })
+
+    -- Add padding for text
+    local textPadding = createUIElement("UIPadding", "TextPadding", input, {
+        PaddingLeft = UDim.new(0, PADDING),
+        PaddingRight = UDim.new(0, PADDING),
+    })
+
+    if callback then
+        input.FocusLost:Connect(function(enterPressed)
+            if enterPressed then
+                callback(input.Text)
+            end
+        })
+    end
+
+    return input
+end
+
+--- CHECKBOX ---
+function UILib:CreateCheckbox(parent, text, position, initialValue, callback)
+    local container = createUIElement("Frame", "CheckboxContainer", parent, {
+        Size = UDim2.new(0, 150, 0, 20),
+        Position = position or UDim2.new(0, 0, 0, 0),
+        BackgroundColor3 = COLORS.Primary,
+        BackgroundTransparency = 1,
+    })
+
+    local checkboxButton = createUIElement("TextButton", "Checkbox", container, {
+        Size = UDim2.new(0, 18, 0, 18),
+        Position = UDim2.new(0, 0, 0, 1),
+        BackgroundColor3 = COLORS.Secondary,
+        BorderColor3 = COLORS.Border,
+        BorderSizePixel = BORDER_SIZE,
+        Text = initialValue and "✓" or "",
+        TextColor3 = COLORS.Text,
+        TextSize = FONT_SIZE + 4,
+        Font = FONT,
+    })
+
+    local label = createUIElement("TextLabel", "Label", container, {
+        Size = UDim2.new(1, -25, 1, 0),
+        Position = UDim2.new(0, 25, 0, 0),
+        BackgroundColor3 = COLORS.Primary,
+        BackgroundTransparency = 1,
+        Text = text or "Checkbox",
+        TextColor3 = COLORS.Text,
+        TextSize = FONT_SIZE,
+        Font = FONT,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Center,
+    })
+
+    local checked = initialValue or false
+
+    local function updateCheckbox()
+        checkboxButton.Text = checked and "✓" or ""
+        if callback then
+            callback(checked)
+        end
+    end
+
+    checkboxButton.MouseButton1Click:Connect(function()
+        checked = not checked
+        updateCheckbox()
+    end)
+
+    local checkbox = {
+        Container = container,
+        Button = checkboxButton,
+        Label = label,
+        GetValue = function() return checked end,
+        SetValue = function(value)
+            checked = value
+            updateCheckbox()
+        end,
+    }
+
+    return checkbox
+end
+
+--- DROPDOWN ---
+function UILib:CreateDropdown(parent, options, position, size, initialSelection, callback)
+    local container = createUIElement("Frame", "DropdownContainer", parent, {
+        Size = size or UDim2.new(0, 150, 0, 30),
+        Position = position or UDim2.new(0, 0, 0, 0),
+        BackgroundColor3 = COLORS.Secondary,
+        BorderColor3 = COLORS.Border,
+        BorderSizePixel = BORDER_SIZE, -- CORRECTED: Was BORDER_1
+    })
+
+    local currentSelection = initialSelection or (options and options[1])
+    local isOpen = false
+
+    local selectedLabel = createUIElement("TextButton", "SelectedOption", container, {
+        Size = UDim2.new(1, -20, 1, 0),
+        Position = UDim2.new(0, 0, 0, 0),
+        BackgroundColor3 = COLORS.Secondary,
+        BackgroundTransparency = 0,
+        Text = currentSelection or "Select Option",
+        TextColor3 = COLORS.Text,
+        TextSize = FONT_SIZE,
+        Font = FONT,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Center,
+    })
+    -- Add padding for text
+    local labelPadding = createUIElement("UIPadding", "LabelPadding", selectedLabel, {
+        PaddingLeft = UDim.new(0, PADDING),
+    })
+
+
+    local arrowLabel = createUIElement("TextLabel", "Arrow", container, {
+        Size = UDim2.new(0, 20, 1, 0),
+        Position = UDim2.new(1, -20, 0, 0),
+        BackgroundColor3 = COLORS.Secondary,
+        BackgroundTransparency = 1,
+        Text = "▼", -- Down arrow
+        TextColor3 = COLORS.Text,
+        TextSize = FONT_SIZE,
+        Font = FONT,
+    })
+
+    local optionsFrame = createUIElement("Frame", "OptionsFrame", container, {
+        Size = UDim2.new(1, 0, 0, 0), -- Height will be dynamic
+        Position = UDim2.new(0, 0, 1, 0),
+        BackgroundColor3 = COLORS.Secondary,
+        BorderColor3 = COLORS.Border,
+        BorderSizePixel = BORDER_SIZE, -- CORRECTED: Was BORDER_1
+        Visible = false,
+        ZIndex = 2, -- Ensure it's on top of other UI elements
+    })
+
+    local optionsLayout = createUIElement("UIListLayout", "OptionsLayout", optionsFrame, {
+        Padding = UDim.new(0, 2),
+        FillDirection = Enum.FillDirection.Vertical,
+        HorizontalAlignment = Enum.HorizontalAlignment.Left,
+        VerticalAlignment = Enum.VerticalAlignment.Top,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+    })
+
+    local optionButtons = {}
+    local optionHeight = 25
+
+    local function populateOptions()
+        for _, btn in pairs(optionButtons) do
+            btn:Destroy()
+        end
+        optionButtons = {}
+
+        for i, optionText in ipairs(options) do
+            local optionButton = createUIElement("TextButton", "Option" .. i, optionsFrame, {
+                Size = UDim2.new(1, 0, 0, optionHeight),
+                BackgroundColor3 = COLORS.Secondary,
+                BorderColor3 = COLORS.Border,
+                BorderSizePixel = BORDER_SIZE,
+                Text = optionText,
+                TextColor3 = COLORS.Text,
+                TextSize = FONT_SIZE,
+                Font = FONT,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                TextYAlignment = Enum.TextYAlignment.Center,
+                LayoutOrder = i,
+            })
+            -- Add padding for text
+            local optionPadding = createUIElement("UIPadding", "OptionPadding", optionButton, {
+                PaddingLeft = UDim.new(0, PADDING),
+            })
+
+            optionButton.MouseEnter:Connect(function()
+                optionButton.BackgroundColor3 = COLORS.Hover
+            end)
+            optionButton.MouseLeave:Connect(function()
+                optionButton.BackgroundColor3 = COLORS.Secondary
+            end)
+
+            optionButton.MouseButton1Click:Connect(function()
+                currentSelection = optionText
+                selectedLabel.Text = currentSelection
+                isOpen = false
+                optionsFrame.Visible = false
+                arrowLabel.Text = "▼"
+                if callback then
+                    callback(currentSelection)
+                end
+            end)
+            table.insert(optionButtons, optionButton)
+        end
+        optionsFrame.Size = UDim2.new(1, 0, 0, #options * (optionHeight + optionsLayout.Padding.Offset))
+    end
+
+    populateOptions()
+
+    selectedLabel.MouseButton1Click:Connect(function()
+        isOpen = not isOpen
+        optionsFrame.Visible = isOpen
+        arrowLabel.Text = isOpen and "▲" or "▼"
+    end)
+
+    -- Close dropdown if clicked outside
+    game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessedEvent)
+        if isOpen and not gameProcessedEvent and input.UserInputType == Enum.UserInputType.MouseButton1 then
+            local mousePos = input.Position
+            local containerAbsolutePos = container.AbsolutePosition
+            local containerAbsoluteSize = container.AbsoluteSize
+
+            local optionsFrameAbsolutePos = optionsFrame.AbsolutePosition
+            local optionsFrameAbsoluteSize = optionsFrame.AbsoluteSize
+
+            local clickedInsideContainer = mousePos.X >= containerAbsolutePos.X and mousePos.X <= containerAbsolutePos.X + containerAbsoluteSize.X and
+                                          mousePos.Y >= containerAbsolutePos.Y and mousePos.Y <= containerAbsolutePos.Y + containerAbsoluteSize.Y
+
+            local clickedInsideOptions = mousePos.X >= optionsFrameAbsolutePos.X and mousePos.X <= optionsFrameAbsolutePos.X + optionsFrameAbsoluteSize.X and
+                                         mousePos.Y >= optionsFrameAbsolutePos.Y and mousePos.Y <= optionsFrameAbsolutePos.Y + optionsFrameAbsoluteSize.Y
+
+            if not clickedInsideContainer and not clickedInsideOptions then
+                isOpen = false
+                optionsFrame.Visible = false
+                arrowLabel.Text = "▼"
+            end
+        end
+    end)
+
+    local dropdown = {
+        Container = container,
+        SelectedLabel = selectedLabel,
+        OptionsFrame = optionsFrame,
+        GetValue = function() return currentSelection end,
+        SetValue = function(value)
+            if table.find(options, value) then
+                currentSelection = value
+                selectedLabel.Text = currentSelection
+            end
+        end,
+        -- You might want a way to dynamically update options
+        SetOptions = function(newOptions)
+            options = newOptions
+            populateOptions()
+            -- Reset selection if current is no longer valid
+            if not table.find(options, currentSelection) then
+                currentSelection = options[1]
+                selectedLabel.Text = currentSelection
+            end
+        end
+    }
+
+    return dropdown
+end
+
+--- SLIDER ---
+function UILib:CreateSlider(parent, min, max, initialValue, step, callback)
+    local container = createUIElement("Frame", "SliderContainer", parent, {
+        Size = UDim2.new(1, 0, 0, 30),
+        Position = UDim2.new(0, 0, 0, 0),
+        BackgroundColor3 = COLORS.Primary,
+        BackgroundTransparency = 1,
+    })
+
+    local sliderTrack = createUIElement("Frame", "SliderTrack", container, {
+        Size = UDim2.new(1, -2 * PADDING, 0, 5),
+        Position = UDim2.new(0, PADDING, 0.5, -2.5),
+        BackgroundColor3 = COLORS.Secondary,
+        BorderColor3 = COLORS.Border,
+        BorderSizePixel = BORDER_SIZE,
+    })
+
+    local sliderFill = createUIElement("Frame", "SliderFill", sliderTrack, {
+        Size = UDim2.new(0, 0, 1, 0),
+        Position = UDim2.new(0, 0, 0, 0),
+        BackgroundColor3 = COLORS.Accent,
+        BorderColor3 = COLORS.Border,
+        BorderSizePixel = BORDER_SIZE,
+    })
+
+    local sliderThumb = createUIElement("ImageLabel", "SliderThumb", sliderTrack, {
+        Size = UDim2.new(0, 15, 0, 15),
+        Position = UDim2.new(0, 0, 0.5, -7.5),
+        BackgroundColor3 = COLORS.Text,
+        BorderColor3 = COLORS.Border,
+        BorderSizePixel = BORDER_SIZE,
+        CornerRadius = UDim.new(0.5, 0), -- Make it a circle
+        ZIndex = 2,
+        Image = "rbxassetid://6034177218", -- A generic circle image or leave blank for a solid circle
+    })
+
+    local valueLabel = createUIElement("TextLabel", "ValueLabel", container, {
+        Size = UDim2.new(1, 0, 0, 20),
+        Position = UDim2.new(0, 0, 0, 0),
+        BackgroundColor3 = COLORS.Primary,
+        BackgroundTransparency = 1,
+        TextColor3 = COLORS.Text,
+        TextSize = FONT_SIZE,
+        Font = FONT,
+        TextXAlignment = Enum.TextXAlignment.Center,
+        TextYAlignment = Enum.TextYAlignment.Top,
+    })
+
+    local currentValue = initialValue or min
+    step = step or 1
+
+    local function updateSlider(value)
+        currentValue = math.clamp(value, min, max)
+        currentValue = math.round(currentValue / step) * step -- Apply stepping
+
+        local normalizedValue = (currentValue - min) / (max - min)
+        local thumbX = normalizedValue * (sliderTrack.AbsoluteSize.X - sliderThumb.AbsoluteSize.X)
+        sliderThumb.Position = UDim2.new(0, thumbX, 0.5, -7.5)
+        sliderFill.Size = UDim2.new(normalizedValue, 0, 1, 0)
+        valueLabel.Text = string.format("%.1f", currentValue) -- Format to one decimal place
+
+        if callback then
+            callback(currentValue)
+        end
+    end
+
+    local dragging = false
+    local startX = 0
+    local startValue = 0
+
+    sliderThumb.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            startX = input.Position.X
+            startValue = currentValue
+        end
+    end)
+
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local deltaX = input.Position.X - startX
+            local trackWidth = sliderTrack.AbsoluteSize.X - sliderThumb.AbsoluteSize.X
+            local percentageChange = deltaX / trackWidth
+            local newValue = startValue + percentageChange * (max - min)
+            updateSlider(newValue)
+        end
+    end)
+
+    game:GetService("UserInputService").InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+
+    sliderTrack.MouseButton1Down:Connect(function(x, y)
+        local relativeX = x - sliderTrack.AbsolutePosition.X
+        local normalizedX = relativeX / sliderTrack.AbsoluteSize.X
+        local newValue = min + normalizedX * (max - min)
+      updateSlider(newValue)
+    end)
+
+    updateSlider(currentValue) -- Initialize slider position and text
+
+    local slider = {
+        Container = container,
+        Track = sliderTrack,
+        Fill = sliderFill,
+        Thumb = sliderThumb,
+        Label = valueLabel,
+        GetValue = function() return currentValue end,
+        SetValue = function(value) updateSlider(value) end,
+    }
+
+    return slider
+end
+
+--- SCROLL FRAME ---
+function UILib:CreateScrollFrame(parent, position, size)
+    local scrollFrame = createUIElement("ScrollingFrame", "ScrollFrame", parent, {
+        Size = size or UDim2.new(1, 0, 1, 0),
+        Position = position or UDim2.new(0, 0, 0, 0),
+        BackgroundColor3 = COLORS.Primary,
+        BackgroundTransparency = 1,
+        BorderColor3 = COLORS.Border,
+        BorderSizePixel = BORDER_SIZE,
+        CanvasSize = UDim2.new(0, 0, 0, 0), -- Will be updated by UIListLayout
+        AutomaticCanvasSize = Enum.AutomaticCanvasSize.Y, -- Automatically adjust canvas height
+        ScrollBarThickness = 6,
+        ScrollBarImageColor3 = COLORS.Accent,
+        ScrollingDirection = Enum.ScrollingDirection.Y,
+        VerticalScrollBarInset = Enum.ScrollBarInset.Always,
+        HorizontalScrollBarInset = Enum.ScrollBarInset.None,
+    })
+
+    local listLayout = createUIElement("UIListLayout", "ListLayout", scrollFrame, {
+        Padding = UDim.new(0, PADDING),
+        FillDirection = Enum.FillDirection.Vertical,
+        HorizontalAlignment = Enum.HorizontalAlignment.Left,
+        VerticalAlignment = Enum.VerticalAlignment.Top,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+    })
+
+    local padding = createUIElement("UIPadding", "ContentPadding", scrollFrame, {
+        PaddingTop = UDim.new(0, PADDING),
+        PaddingBottom = UDim.new(0, PADDING),
+        PaddingLeft = UDim.new(0, PADDING),
+        PaddingRight = UDim.new(0, PADDING),
+    })
+
+    local scroll = {
+        Frame = scrollFrame,
+        Layout = listLayout,
+        Padding = padding,
+    }
+
+    return scroll
+end
+
+--- TAB MENU (More complex, but common) ---
+function UILib:CreateTabMenu(parent, position, size, tabsConfig)
+    local container = createUIElement("Frame", "TabMenuContainer", parent, {
+        Size = size or UDim2.new(1, 0, 1, 0),
+        Position = position or UDim2.new(0, 0, 0, 0),
+        BackgroundColor3 = COLORS.Primary,
+        BorderColor3 = COLORS.Border,
+        BorderSizePixel = BORDER_SIZE,
+    })
+
+    local tabButtonsFrame = createUIElement("Frame", "TabButtonsFrame", container, {
+        Size = UDim2.new(1, 0, 0, 30),
+        Position = UDim2.new(0, 0, 0, 0),
+        BackgroundColor3 = COLORS.Secondary,
+        BorderColor3 = COLORS.Border,
+        BorderSizePixel = BORDER_SIZE,
+    })
+
+    local tabContentFrame = createUIElement("Frame", "TabContentFrame", container, {
+        Size = UDim2.new(1, 0, 1, -30),
+        Position = UDim2.new(0, 0, 0, 30),
+        BackgroundColor3 = COLORS.Primary,
+        BorderColor3 = COLORS.Border,
+        BorderSizePixel = BORDER_SIZE,
+        ClipsDescendants = true,
+    })
+
+    local tabButtonsLayout = createUIElement("UIListLayout", "TabButtonsLayout", tabButtonsFrame, {
+        Padding = UDim.new(0, 1),
+        FillDirection = Enum.FillDirection.Horizontal,
+        HorizontalAlignment = Enum.HorizontalAlignment.Left,
+        VerticalAlignment = Enum.VerticalAlignment.Center,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+    })
+
+    local currentTab = nil
+    local tabContents = {}
+    local tabButtons = {}
+
+    local function showTab(tabName)
+        for name, content in pairs(tabContents) do
+            content.Visible = (name == tabName)
+        end
+        for name, button in pairs(tabButtons) do
+            button.BackgroundColor3 = (name == tabName) and COLORS.Accent or COLORS.Secondary
+        end
+        currentTab = tabName
+    end
+
+    for i, tabInfo in ipairs(tabsConfig) do
+        local tabName = tabInfo.Name
+        local tabContent = tabInfo.Content -- This will be a function that returns a UI element or frame
+
+        -- Create tab button
+        local tabButton = createUIElement("TextButton", tabName .. "Button", tabButtonsFrame, {
+            Size = UDim2.new(0.5 / #tabsConfig, -1, 1, 0), -- Distribute horizontally
+            BackgroundColor3 = COLORS.Secondary,
+            BorderColor3 = COLORS.Border,
+            BorderSizePixel = BORDER_SIZE,
+            Text = tabName,
+            TextColor3 = COLORS.Text,
+            TextSize = FONT_SIZE,
+            Font = FONT,
+            LayoutOrder = i,
+        })
+        tabButtons[tabName] = tabButton
+
+        -- Create tab content frame
+        local contentFrame = createUIElement("Frame", tabName .. "Content", tabContentFrame, {
+            Size = UDim2.new(1, 0, 1, 0),
+            Position = UDim2.new(0, 0, 0, 0),
+            BackgroundColor3 = COLORS.Primary,
+            BackgroundTransparency = 1,
+            Visible = false, -- Hide by default
+        })
+        tabContents[tabName] = contentFrame
+
+        -- If tabContent is a function, call it to create the content inside the frame
+        if type(tabContent) == "function" then
+            tabContent(contentFrame)
+        else
+            warn("Tab content for '" .. tabName .. "' is not a function. Provide a function to populate tab content.")
+        end
+
+        tabButton.MouseButton1Click:Connect(function()
+            showTab(tabName)
+        end)
+    end
+
+    -- Show the first tab by default
+    if #tabsConfig > 0 then
+        showTab(tabsConfig[1].Name)
+    end
+
+    local tabMenu = {
+        Container = container,
+        TabButtonsFrame = tabButtonsFrame,
+        TabContentFrame = tabContentFrame,
+        ShowTab = showTab,
+        GetCurrentTab = function() return currentTab end,
+    }
+
+    return tabMenu
+end
+
+return UILib
